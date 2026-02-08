@@ -27,7 +27,27 @@ export async function proxy(request: NextRequest) {
 
   // Refresh the auth token if expired.
   // Always use getUser() — getSession() reads from cookies which can be spoofed.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // 未ログインユーザーを /login にリダイレクト（/login と /auth は除外）
+  if (
+    !user &&
+    !request.nextUrl.pathname.startsWith("/login") &&
+    !request.nextUrl.pathname.startsWith("/auth")
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  // ログイン済みユーザーが /login にアクセスしたら / にリダイレクト
+  if (user && request.nextUrl.pathname.startsWith("/login")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
 
   return supabaseResponse;
 }
