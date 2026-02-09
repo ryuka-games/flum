@@ -17,10 +17,16 @@ export function FeedItemList({
   initialItems,
   feedSourceIds,
   sourceNameMap,
+  favoritedUrls,
+  channelName,
+  returnPath,
 }: {
   initialItems: FeedItemData[];
   feedSourceIds: string[];
   sourceNameMap: Record<string, string>;
+  favoritedUrls: string[];
+  channelName: string;
+  returnPath: string;
 }) {
   const [items, setItems] = useState(initialItems);
   const [prevInitialItems, setPrevInitialItems] = useState(initialItems);
@@ -93,6 +99,9 @@ export function FeedItemList({
           sourceName={sourceNameMap[item.feed_source_id] ?? ""}
           publishedAt={item.published_at}
           thumbnailUrl={item.thumbnail_url}
+          channelName={channelName}
+          returnPath={returnPath}
+          isFavorited={favoritedUrls.includes(item.url)}
         />
       ))}
     </div>

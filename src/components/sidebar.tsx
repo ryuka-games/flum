@@ -24,8 +24,16 @@ export async function Sidebar() {
         <h1 className="text-lg font-bold text-white">Flum</h1>
       </div>
 
-      {/* チャンネル一覧 */}
+      {/* ナビゲーション */}
       <nav className="flex-1 overflow-y-auto px-2 py-2">
+        <a
+          href="/favorites"
+          className="mb-2 flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-zinc-800"
+        >
+          <span className="text-yellow-400">★</span>
+          お気に入り
+        </a>
+
         <p className="mb-1 px-2 text-xs font-semibold uppercase text-zinc-500">
           チャンネル
         </p>

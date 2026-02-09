@@ -44,6 +44,12 @@ export default async function ChannelPage({
     .order("published_at", { ascending: false, nullsFirst: false })
     .limit(100);
 
+  // お気に入り済み URL 一覧
+  const { data: favorites } = await supabase
+    .from("favorites")
+    .select("url");
+  const favoritedUrls = (favorites ?? []).map((f) => f.url);
+
   return (
     <>
       {/* ヘッダー */}
@@ -114,6 +120,9 @@ export default async function ChannelPage({
           initialItems={items ?? []}
           feedSourceIds={feedSourceIds}
           sourceNameMap={sourceNameMap}
+          favoritedUrls={favoritedUrls}
+          channelName={channel.name}
+          returnPath={`/channels/${id}`}
         />
       </div>
     </>
