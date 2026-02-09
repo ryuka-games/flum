@@ -51,6 +51,7 @@ export async function addFeedSource(
   if (result.feed.items.length > 0) {
     const items = result.feed.items.map((item) => ({
       feed_source_id: source.id,
+      user_id: user.id,
       title: item.title,
       url: item.url,
       content: item.content ?? null,
@@ -91,6 +92,10 @@ export async function refreshFeed(formData: FormData) {
   if (!sourceId) return;
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
   // ソースの URL を取得
   const { data: source } = await supabase
@@ -107,6 +112,7 @@ export async function refreshFeed(formData: FormData) {
   if (result.feed.items.length > 0) {
     const items = result.feed.items.map((item) => ({
       feed_source_id: source.id,
+      user_id: user.id,
       title: item.title,
       url: item.url,
       content: item.content ?? null,

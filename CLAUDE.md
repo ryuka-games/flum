@@ -48,6 +48,7 @@ Discord/Teams風のチャンネルUIで、RSS等のフィードをカテゴリ�
 
 - **フロントエンド**: Next.js 16 (App Router) + TypeScript + Tailwind CSS v4
 - **バックエンド**: Supabase（PostgreSQL + Auth + Realtime）
+- **RSS パース**: feedsmith（TypeScript ネイティブ、RSS/Atom/JSON Feed 対応）
 - **ホスティング**: Vercel（フロント）+ Supabase Cloud（バックエンド）
 - **リアルタイム**: Supabase Realtime（WebSocket ベース）
 - **ツール**: ESLint + Prettier, Turbopack
@@ -129,6 +130,25 @@ npm test
 - **フォーマッタ**: Prettier + ESLint
 - **命名**: キャメルケース（変数・関数）、パスカルケース（コンポーネント）
 - **コミットメッセージ**: Lokup と同じ形式（`feat:`, `fix:`, `docs:`, `refactor:`, `test:`）
+
+---
+
+## 踏んだ罠と教訓
+
+### Supabase Realtime + `@supabase/ssr` で認証トークンが WebSocket に渡らない
+
+**現象**: RLS を有効にすると Realtime イベントが届かない（SUBSCRIBED はするが INSERT が来ない）。RLS を無効にすると動く。
+
+**誤診**: JOIN ベースの複雑な RLS ポリシーが WALRUS（Realtime の RLS 評価エンジン）の再帰評価で失敗していると結論。`feed_items` に `user_id` を非正規化して JOIN を排除 → まだ動かない。
+
+**本当の原因**: `@supabase/ssr` の `createBrowserClient` は Cookie ベース認証だが、**WebSocket 接続には Cookie が自動で載らない**。結果、Realtime の RLS 評価で `auth.uid()` が常に NULL を返していた。JOIN の複雑さは無関係。
+
+**修正**: `supabase.realtime.setAuth(session.access_token)` を subscribe 前に呼ぶ。
+
+**教訓**:
+- 「動かない」のデバッグは**最も基本的な前提**（認証トークンが渡っているか）から検証する
+- ポリシーの複雑さを疑う前に `auth.uid()` が正しい値を返しているか確認する
+- HTTP と WebSocket は認証の仕組みが異なることを意識する
 
 ---
 
