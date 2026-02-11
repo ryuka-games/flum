@@ -35,6 +35,8 @@ export async function toggleFavorite(formData: FormData) {
       channel_name: (formData.get("channel_name") as string) || null,
       thumbnail_url: (formData.get("thumbnail_url") as string) || null,
       published_at: (formData.get("published_at") as string) || null,
+      og_image: (formData.get("og_image") as string) || null,
+      og_description: (formData.get("og_description") as string) || null,
     });
   }
 

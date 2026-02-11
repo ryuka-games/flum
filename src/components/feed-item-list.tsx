@@ -11,6 +11,9 @@ type FeedItemData = {
   thumbnail_url: string | null;
   published_at: string | null;
   feed_source_id: string;
+  og_image: string | null;
+  og_description: string | null;
+  content: string | null;
 };
 
 export function FeedItemList({
@@ -90,7 +93,7 @@ export function FeedItemList({
   }
 
   return (
-    <div className="divide-y divide-zinc-800/50">
+    <div className="mx-auto max-w-xl divide-y divide-zinc-800/50">
       {items.map((item) => (
         <FeedItem
           key={item.id}
@@ -98,10 +101,13 @@ export function FeedItemList({
           url={item.url}
           sourceName={sourceNameMap[item.feed_source_id] ?? ""}
           publishedAt={item.published_at}
-          thumbnailUrl={item.thumbnail_url}
           channelName={channelName}
           returnPath={returnPath}
           isFavorited={favoritedUrls.includes(item.url)}
+          ogImage={item.og_image ?? undefined}
+          ogDescription={item.og_description ?? undefined}
+          thumbnailUrl={item.thumbnail_url ?? undefined}
+          content={item.content ?? undefined}
         />
       ))}
     </div>

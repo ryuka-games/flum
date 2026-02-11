@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/sidebar";
+import { AppShell } from "@/components/app-shell";
 
 export default async function AppLayout({
   children,
@@ -6,9 +7,8 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <main className="flex flex-1 flex-col overflow-hidden">{children}</main>
-    </div>
+    <AppShell sidebar={<Sidebar />}>
+      {children}
+    </AppShell>
   );
 }

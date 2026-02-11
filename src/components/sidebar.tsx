@@ -1,3 +1,4 @@
+import { Star, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/actions/auth";
@@ -30,7 +31,7 @@ export async function Sidebar() {
           href="/favorites"
           className="mb-2 flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-zinc-800"
         >
-          <span className="text-yellow-400">★</span>
+          <Star size={14} fill="currentColor" className="text-yellow-400" />
           お気に入り
         </a>
 
@@ -76,10 +77,10 @@ export async function Sidebar() {
           <form action={signOut}>
             <button
               type="submit"
-              className="text-xs text-zinc-500 hover:text-white"
+              className="text-zinc-500 hover:text-white"
               title="ログアウト"
             >
-              退出
+              <LogOut size={18} />
             </button>
           </form>
         </div>

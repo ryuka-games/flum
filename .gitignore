@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local notes
+docs/articles/
+CONTEXT-SNAPSHOT.md
+CLAUDE.local.md

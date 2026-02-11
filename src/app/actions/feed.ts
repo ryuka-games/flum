@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { fetchAndParseFeed } from "@/lib/feed/fetch-feed";
+import { fetchOgpBatch } from "@/lib/feed/fetch-ogp";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -47,8 +48,12 @@ export async function addFeedSource(
     return { error: "ソースの登録に失敗しました" };
   }
 
-  // feed_items に upsert
+  // feed_items に upsert（OGP 並列フェッチ付き）
   if (result.feed.items.length > 0) {
+    const ogpMap = await fetchOgpBatch(
+      result.feed.items.map((item) => item.url),
+    );
+
     const items = result.feed.items.map((item) => ({
       feed_source_id: source.id,
       user_id: user.id,
@@ -57,6 +62,8 @@ export async function addFeedSource(
       content: item.content ?? null,
       thumbnail_url: item.thumbnailUrl ?? null,
       published_at: item.publishedAt ?? null,
+      og_image: ogpMap.get(item.url)?.image ?? null,
+      og_description: ogpMap.get(item.url)?.description ?? null,
     }));
 
     await supabase.from("feed_items").upsert(items, {
@@ -86,10 +93,9 @@ export async function deleteFeedSource(formData: FormData) {
   revalidatePath(`/channels/${channelId}`);
 }
 
-export async function refreshFeed(formData: FormData) {
-  const sourceId = formData.get("source_id") as string;
+export async function refreshChannel(formData: FormData) {
   const channelId = formData.get("channel_id") as string;
-  if (!sourceId) return;
+  if (!channelId) return;
 
   const supabase = await createClient();
   const {
@@ -97,39 +103,49 @@ export async function refreshFeed(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // ソースの URL を取得
-  const { data: source } = await supabase
+  // チャンネルの全ソースを取得
+  const { data: sources } = await supabase
     .from("feed_sources")
     .select("id, url")
-    .eq("id", sourceId)
-    .single();
+    .eq("channel_id", channelId);
 
-  if (!source) return;
+  if (!sources || sources.length === 0) return;
 
-  const result = await fetchAndParseFeed(source.url);
-  if (!result.success) return;
+  // 全ソースを並列フェッチ
+  await Promise.allSettled(
+    sources.map(async (source) => {
+      const result = await fetchAndParseFeed(source.url);
+      if (!result.success) return;
 
-  if (result.feed.items.length > 0) {
-    const items = result.feed.items.map((item) => ({
-      feed_source_id: source.id,
-      user_id: user.id,
-      title: item.title,
-      url: item.url,
-      content: item.content ?? null,
-      thumbnail_url: item.thumbnailUrl ?? null,
-      published_at: item.publishedAt ?? null,
-    }));
+      if (result.feed.items.length > 0) {
+        const ogpMap = await fetchOgpBatch(
+          result.feed.items.map((item) => item.url),
+        );
 
-    await supabase.from("feed_items").upsert(items, {
-      onConflict: "feed_source_id,url",
-      ignoreDuplicates: true,
-    });
-  }
+        const items = result.feed.items.map((item) => ({
+          feed_source_id: source.id,
+          user_id: user.id,
+          title: item.title,
+          url: item.url,
+          content: item.content ?? null,
+          thumbnail_url: item.thumbnailUrl ?? null,
+          published_at: item.publishedAt ?? null,
+          og_image: ogpMap.get(item.url)?.image ?? null,
+          og_description: ogpMap.get(item.url)?.description ?? null,
+        }));
 
-  await supabase
-    .from("feed_sources")
-    .update({ last_fetched_at: new Date().toISOString() })
-    .eq("id", source.id);
+        await supabase.from("feed_items").upsert(items, {
+          onConflict: "feed_source_id,url",
+          ignoreDuplicates: true,
+        });
+      }
+
+      await supabase
+        .from("feed_sources")
+        .update({ last_fetched_at: new Date().toISOString() })
+        .eq("id", source.id);
+    }),
+  );
 
   revalidatePath(`/channels/${channelId}`);
 }
