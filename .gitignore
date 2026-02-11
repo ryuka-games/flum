@@ -43,4 +43,5 @@ next-env.d.ts
 # local notes
 docs/articles/
 CONTEXT-SNAPSHOT.md
+CLAUDE.md
 CLAUDE.local.md
