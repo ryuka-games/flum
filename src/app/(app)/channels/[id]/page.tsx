@@ -6,6 +6,7 @@ import { deleteFeedSource, refreshChannel } from "@/app/actions/feed";
 import { AddFeedForm } from "@/components/add-feed-form";
 import { Dropdown } from "@/components/dropdown";
 import { FeedItemList } from "@/components/feed-item-list";
+import { AutoRefresh } from "@/components/auto-refresh";
 
 export default async function ChannelPage({
   params,
@@ -32,7 +33,7 @@ export default async function ChannelPage({
 
   const feedSourceIds = (sources ?? []).map((s) => s.id);
 
-  // sourceNameMap: feedSourceId → ソース名（Realtime ペイロードにはJOINデータがないため）
+  // sourceNameMap: feedSourceId → ソース名
   const sourceNameMap: Record<string, string> = {};
   for (const s of sources ?? []) {
     sourceNameMap[s.id] = s.name;
@@ -117,11 +118,10 @@ export default async function ChannelPage({
         </header>
       </div>
 
-      {/* フィードアイテム一覧（Realtime 対応 Client Component） */}
+      <AutoRefresh channelId={channel.id} />
       <div>
         <FeedItemList
-          initialItems={items ?? []}
-          feedSourceIds={feedSourceIds}
+          items={items ?? []}
           sourceNameMap={sourceNameMap}
           favoritedUrls={favoritedUrls}
           channelName={channel.name}

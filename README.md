@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Flum
 
-## Getting Started
+Discord 風チャンネル UI のリアルタイムフィードリーダー。
 
-First, run the development server:
+## 概要
+
+RSS フィードをチャンネルごとに整理し、リアルタイムで新着記事を受信するフィードリーダーです。Feedly の整理力と Discord のリアルタイム感を両立します。
+
+名前の由来: Flume（水路）から e を引いた造語。情報がチャンネルを通じて流れるイメージ。
+
+<!-- スクリーンショットをここに追加 -->
+
+## 主な機能
+
+- **GitHub OAuth ログイン** — Supabase Auth による認証
+- **チャンネル管理** — カテゴリごとにフィードを整理
+- **RSS ソース登録** — チャンネルに RSS/Atom/JSON Feed を紐づけ
+- **リアルタイム更新** — Supabase Realtime で新着記事を即時表示
+- **OGP カード表示** — 画像 + 説明文で記事を流し見できる
+- **お気に入り保存** — 気になった記事を永続的に保存
+- **共有** — X / LINE / URL コピー（Intent URL パターン）
+- **サイドバー折りたたみ** — 画面を広く使える
+
+## 技術スタック
+
+| カテゴリ | 技術 |
+|---------|------|
+| フロントエンド | Next.js 16 (App Router), React 19, TypeScript 5 |
+| スタイリング | Tailwind CSS v4 |
+| バックエンド | Supabase (PostgreSQL, Auth, Realtime) |
+| RSS パース | [feedsmith](https://github.com/nickvdyck/feedsmith) |
+| ホスティング | Vercel + Supabase Cloud |
+
+## セットアップ
 
 ```bash
+git clone https://github.com/ryuka-games/flum.git
+cd flum
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 環境変数
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`.env.local` に以下を設定:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| 変数 | 説明 |
+|------|------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase プロジェクトの URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase の Publishable Key (anon) |
 
-## Learn More
+### Supabase 側の準備
 
-To learn more about Next.js, take a look at the following resources:
+1. [Supabase](https://supabase.com) でプロジェクトを作成
+2. Auth > Providers で GitHub OAuth App を設定
+3. `supabase/migrations/` 内の SQL をマイグレーション順に実行
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## プロジェクト構成
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/
+│   ├── (app)/          # 認証済みレイアウト
+│   │   ├── channels/   # チャンネル詳細
+│   │   └── favorites/  # お気に入り一覧
+│   ├── actions/        # Server Actions
+│   └── login/          # ログインページ
+├── components/         # UI コンポーネント
+└── lib/
+    ├── feed/           # RSS/OGP フェッチ
+    └── supabase/       # Supabase クライアント
+```
 
-## Deploy on Vercel
+## 関連プロジェクト
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Lokup](https://github.com/ryuka-games/lokup) — GitHub リポジトリ健康診断ツール（Go）

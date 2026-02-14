@@ -1,7 +1,3 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { FeedItem } from "@/components/feed-item";
 
 type FeedItemData = {
@@ -17,68 +13,18 @@ type FeedItemData = {
 };
 
 export function FeedItemList({
-  initialItems,
-  feedSourceIds,
+  items,
   sourceNameMap,
   favoritedUrls,
   channelName,
   returnPath,
 }: {
-  initialItems: FeedItemData[];
-  feedSourceIds: string[];
+  items: FeedItemData[];
   sourceNameMap: Record<string, string>;
   favoritedUrls: string[];
   channelName: string;
   returnPath: string;
 }) {
-  const [items, setItems] = useState(initialItems);
-  const [prevInitialItems, setPrevInitialItems] = useState(initialItems);
-
-  // React 推奨: レンダリング中に prop 変更を検知して state を同期
-  // useEffect ではなくこのパターンで余分な再レンダリングを回避
-  if (initialItems !== prevInitialItems) {
-    setPrevInitialItems(initialItems);
-    setItems(initialItems);
-  }
-
-  useEffect(() => {
-    if (feedSourceIds.length === 0) return;
-
-    const supabase = createClient();
-    let channel: ReturnType<typeof supabase.channel> | null = null;
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) return;
-      supabase.realtime.setAuth(session.access_token);
-
-      channel = supabase
-        .channel(`feed-items:${feedSourceIds.join(",")}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "feed_items",
-            filter: `feed_source_id=in.(${feedSourceIds.join(",")})`,
-          },
-          (payload) => {
-            const newItem = payload.new as FeedItemData;
-            setItems((prev) => {
-              if (prev.some((item) => item.id === newItem.id)) {
-                return prev;
-              }
-              return [newItem, ...prev];
-            });
-          },
-        )
-        .subscribe();
-    });
-
-    return () => {
-      if (channel) supabase.removeChannel(channel);
-    };
-  }, [feedSourceIds]);
-
   if (items.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center py-20 text-zinc-600">

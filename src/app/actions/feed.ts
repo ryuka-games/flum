@@ -27,10 +27,13 @@ export async function addFeedSource(
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // RSS フェッチ + パース
+  // RSS フェッチ + パース（初回なので条件付きヘッダーなし）
   const result = await fetchAndParseFeed(url);
   if (!result.success) {
     return { error: result.error };
+  }
+  if ("notModified" in result) {
+    return { error: "フィードを取得できませんでした" };
   }
 
   // feed_sources に INSERT
@@ -72,10 +75,14 @@ export async function addFeedSource(
     });
   }
 
-  // last_fetched_at を更新
+  // last_fetched_at + 条件付きヘッダーを保存
   await supabase
     .from("feed_sources")
-    .update({ last_fetched_at: new Date().toISOString() })
+    .update({
+      last_fetched_at: new Date().toISOString(),
+      etag: result.headers.etag ?? null,
+      last_modified_header: result.headers.lastModified ?? null,
+    })
     .eq("id", source.id);
 
   revalidatePath(`/channels/${channelId}`);
@@ -96,17 +103,20 @@ export async function deleteFeedSource(formData: FormData) {
 export async function refreshChannel(formData: FormData) {
   const channelId = formData.get("channel_id") as string;
   if (!channelId) return;
+  await refreshChannelById(channelId);
+}
 
+export async function refreshChannelById(channelId: string) {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) return;
 
-  // チャンネルの全ソースを取得
+  // チャンネルの全ソースを取得（条件付きヘッダー含む）
   const { data: sources } = await supabase
     .from("feed_sources")
-    .select("id, url")
+    .select("id, url, etag, last_modified_header")
     .eq("channel_id", channelId);
 
   if (!sources || sources.length === 0) return;
@@ -114,8 +124,20 @@ export async function refreshChannel(formData: FormData) {
   // 全ソースを並列フェッチ
   await Promise.allSettled(
     sources.map(async (source) => {
-      const result = await fetchAndParseFeed(source.url);
+      const result = await fetchAndParseFeed(source.url, {
+        etag: source.etag,
+        lastModified: source.last_modified_header,
+      });
       if (!result.success) return;
+
+      // 304 Not Modified: フェッチ日時だけ更新
+      if ("notModified" in result) {
+        await supabase
+          .from("feed_sources")
+          .update({ last_fetched_at: new Date().toISOString() })
+          .eq("id", source.id);
+        return;
+      }
 
       if (result.feed.items.length > 0) {
         const ogpMap = await fetchOgpBatch(
@@ -142,7 +164,11 @@ export async function refreshChannel(formData: FormData) {
 
       await supabase
         .from("feed_sources")
-        .update({ last_fetched_at: new Date().toISOString() })
+        .update({
+          last_fetched_at: new Date().toISOString(),
+          etag: result.headers.etag ?? null,
+          last_modified_header: result.headers.lastModified ?? null,
+        })
         .eq("id", source.id);
     }),
   );

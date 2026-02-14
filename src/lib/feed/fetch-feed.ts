@@ -13,7 +13,8 @@ export type FeedItem = {
 };
 
 export type FetchFeedResult =
-  | { success: true; feed: { title: string; items: FeedItem[] } }
+  | { success: true; feed: { title: string; items: FeedItem[] }; headers: { etag?: string; lastModified?: string } }
+  | { success: true; notModified: true }
   | { success: false; error: string };
 
 /**
@@ -22,6 +23,7 @@ export type FetchFeedResult =
  */
 export async function fetchAndParseFeed(
   url: string,
+  conditionalHeaders?: { etag?: string | null; lastModified?: string | null },
 ): Promise<FetchFeedResult> {
   // 1. URL バリデーション
   const validation = validateFeedUrl(url);
@@ -35,17 +37,31 @@ export async function fetchAndParseFeed(
     return { success: false, error: "この URL にはアクセスできません" };
   }
 
-  // 3. フェッチ（タイムアウト + サイズ制限）
+  // 3. フェッチ（タイムアウト + サイズ制限 + 条件付きリクエスト）
   let responseText: string;
+  let responseEtag: string | undefined;
+  let responseLastModified: string | undefined;
   try {
+    const requestHeaders: Record<string, string> = {
+      "User-Agent": "Flum/1.0 RSS Reader",
+      Accept:
+        "application/rss+xml, application/atom+xml, application/xml, text/xml",
+    };
+    if (conditionalHeaders?.etag) {
+      requestHeaders["If-None-Match"] = conditionalHeaders.etag;
+    }
+    if (conditionalHeaders?.lastModified) {
+      requestHeaders["If-Modified-Since"] = conditionalHeaders.lastModified;
+    }
+
     const response = await fetch(url, {
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-      headers: {
-        "User-Agent": "Flum/1.0 RSS Reader",
-        Accept:
-          "application/rss+xml, application/atom+xml, application/xml, text/xml",
-      },
+      headers: requestHeaders,
     });
+
+    if (response.status === 304) {
+      return { success: true, notModified: true };
+    }
 
     if (!response.ok) {
       return {
@@ -53,6 +69,9 @@ export async function fetchAndParseFeed(
         error: `サーバーがエラーを返しました (HTTP ${response.status})`,
       };
     }
+
+    responseEtag = response.headers.get("etag") ?? undefined;
+    responseLastModified = response.headers.get("last-modified") ?? undefined;
 
     // Content-Length での事前チェック
     const contentLength = response.headers.get("content-length");
@@ -79,7 +98,11 @@ export async function fetchAndParseFeed(
     const title = extractTitle(result) || new URL(url).hostname;
     const items = extractItems(result, responseText);
 
-    return { success: true, feed: { title, items } };
+    return {
+      success: true,
+      feed: { title, items },
+      headers: { etag: responseEtag, lastModified: responseLastModified },
+    };
   } catch {
     return {
       success: false,
