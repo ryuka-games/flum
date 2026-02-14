@@ -1,9 +1,8 @@
-import { Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { FeedItem } from "@/components/feed-item";
 
-export default async function FavoritesPage({
+export default async function ScoopsPage({
   searchParams,
 }: {
   searchParams: Promise<{ channel?: string }>;
@@ -16,7 +15,7 @@ export default async function FavoritesPage({
   if (!user) redirect("/login");
 
   let query = supabase
-    .from("favorites")
+    .from("scoops")
     .select("*")
     .order("created_at", { ascending: false });
 
@@ -28,7 +27,7 @@ export default async function FavoritesPage({
 
   // フィルタ用: ユニークなチャンネル名一覧
   const { data: allFavorites } = await supabase
-    .from("favorites")
+    .from("scoops")
     .select("channel_name");
   const channelNames = [
     ...new Set(
@@ -43,8 +42,7 @@ export default async function FavoritesPage({
       <div className="sticky top-0 z-20 bg-[#0a0a0a]">
         <header className="border-b border-zinc-800/50 px-4 py-3">
           <h2 className="text-lg font-semibold text-white">
-            <Star size={16} fill="currentColor" className="mr-1 inline text-yellow-400" />
-            お気に入り
+            Scoops
           </h2>
         </header>
 
@@ -52,7 +50,7 @@ export default async function FavoritesPage({
         {channelNames.length > 0 && (
           <div className="flex flex-wrap gap-2 border-b border-zinc-800/50 px-4 py-2">
             <a
-              href="/favorites"
+              href="/scoops"
               className={`rounded px-2 py-0.5 text-xs ${
                 !filterChannel
                   ? "bg-zinc-600 text-white"
@@ -64,7 +62,7 @@ export default async function FavoritesPage({
             {channelNames.map((name) => (
               <a
                 key={name}
-                href={`/favorites?channel=${encodeURIComponent(name)}`}
+                href={`/scoops?channel=${encodeURIComponent(name)}`}
                 className={`rounded px-2 py-0.5 text-xs ${
                   filterChannel === name
                     ? "bg-zinc-600 text-white"
@@ -99,9 +97,9 @@ export default async function FavoritesPage({
         ) : (
           <div className="flex flex-1 items-center justify-center py-20 text-zinc-600">
             <div className="text-center">
-              <p className="mb-2">お気に入りはまだありません</p>
+              <p className="mb-2">Scoop した記事はまだありません</p>
               <p className="text-sm text-zinc-700">
-                フィードの ★ をクリックするとここに表示されます
+                フィードの ★ をクリックして流れから掬い上げましょう
               </p>
             </div>
           </div>

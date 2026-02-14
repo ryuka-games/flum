@@ -53,6 +53,22 @@ function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim();
 }
 
+/** 記事の経過時間から opacity を計算（時間減衰） */
+const DECAY_START_HOURS = 1;
+const DECAY_END_HOURS = 24;
+const DECAY_MIN_OPACITY = 0.4;
+
+function getTimeDecayOpacity(publishedAt: string | null): number {
+  if (!publishedAt) return 1;
+  const ageMs = Date.now() - new Date(publishedAt).getTime();
+  if (isNaN(ageMs)) return 1;
+  const ageHours = ageMs / 3_600_000;
+  if (ageHours <= DECAY_START_HOURS) return 1;
+  if (ageHours >= DECAY_END_HOURS) return DECAY_MIN_OPACITY;
+  const range = DECAY_END_HOURS - DECAY_START_HOURS;
+  return 1 - ((ageHours - DECAY_START_HOURS) / range) * (1 - DECAY_MIN_OPACITY);
+}
+
 export function FeedItem({
   title,
   url,
@@ -84,9 +100,12 @@ export function FeedItem({
   const imageUrl = ogImage ?? thumbnailUrl;
   const description = ogDescription ?? (content ? stripHtml(content) : undefined);
 
+  const opacity = getTimeDecayOpacity(publishedAt);
+
   return (
     <div
       className="group relative hover:bg-zinc-800/40"
+      style={opacity < 1 ? { opacity } : undefined}
     >
       {/* 行全体をカバーするリンク */}
       <a
@@ -162,7 +181,7 @@ export function FeedItem({
                 <button
                   type="submit"
                   className="cursor-pointer text-yellow-400 hover:text-zinc-500"
-                  title="お気に入り解除"
+                  title="Scoop 解除"
                 >
                   <Star size={14} fill="currentColor" />
                 </button>
@@ -183,7 +202,7 @@ export function FeedItem({
                 <button
                   type="submit"
                   className={`cursor-pointer ${isFavorited ? "text-yellow-400" : "text-zinc-600 hover:text-yellow-400"}`}
-                  title={isFavorited ? "お気に入り解除" : "お気に入りに追加"}
+                  title={isFavorited ? "Scoop 解除" : "Scoop"}
                 >
                   <Star size={14} fill={isFavorited ? "currentColor" : "none"} />
                 </button>

@@ -79,8 +79,8 @@ export async function fetchAndParseFeed(
       return { success: false, error: "レスポンスが大きすぎます" };
     }
 
-    // ストリーミング読み取りでサイズ制限を強制
-    responseText = await readWithSizeLimit(response, MAX_RESPONSE_BYTES);
+    // ストリーミング読み取りでサイズ制限を強制（エンコーディング自動検出）
+    responseText = await readWithSizeLimit(response, MAX_RESPONSE_BYTES, response.headers.get("content-type"));
   } catch (err) {
     if (err instanceof DOMException && err.name === "TimeoutError") {
       return { success: false, error: "接続がタイムアウトしました" };
@@ -111,10 +111,11 @@ export async function fetchAndParseFeed(
   }
 }
 
-/** レスポンスボディをサイズ制限付きで読み取る */
+/** レスポンスボディをサイズ制限付きで読み取る（エンコーディング自動検出） */
 async function readWithSizeLimit(
   response: Response,
   maxBytes: number,
+  contentType: string | null,
 ): Promise<string> {
   const reader = response.body?.getReader();
   if (!reader) throw new Error("No response body");
@@ -133,10 +134,41 @@ async function readWithSizeLimit(
     chunks.push(value);
   }
 
-  const decoder = new TextDecoder();
-  return chunks.map((chunk) => decoder.decode(chunk, { stream: true })).join(
-    "",
-  );
+  // 全チャンクを結合
+  const bytes = new Uint8Array(totalSize);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  const encoding = detectEncoding(bytes, contentType);
+  return new TextDecoder(encoding).decode(bytes);
+}
+
+/** Content-Type ヘッダーと XML 宣言からエンコーディングを検出 */
+function detectEncoding(bytes: Uint8Array, contentType: string | null): string {
+  // 1. Content-Type ヘッダーの charset
+  if (contentType) {
+    const match = contentType.match(/charset=([^\s;]+)/i);
+    if (match) return normalizeEncoding(match[1]);
+  }
+
+  // 2. XML 宣言の encoding（ASCII 互換なので UTF-8 で読んでも OK）
+  const head = new TextDecoder("ascii").decode(bytes.slice(0, 200));
+  const xmlMatch = head.match(/<\?xml[^?]*encoding=["']([^"']+)["']/i);
+  if (xmlMatch) return normalizeEncoding(xmlMatch[1]);
+
+  return "utf-8";
+}
+
+/** エンコーディング名を TextDecoder が受け付ける形式に正規化 */
+function normalizeEncoding(encoding: string): string {
+  const lower = encoding.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (lower === "eucjp" || lower === "xeucjp") return "euc-jp";
+  if (lower === "shiftjis" || lower === "xsjis" || lower === "sjis") return "shift_jis";
+  if (lower === "iso2022jp") return "iso-2022-jp";
+  return encoding.toLowerCase();
 }
 
 /** フォーマットに依存せずフィードタイトルを取得 */

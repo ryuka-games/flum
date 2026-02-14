@@ -31,7 +31,8 @@ export async function fetchOgpData(url: string): Promise<OgpData> {
     if (!response.ok) return {};
 
     // <head> だけ読めればいいのでサイズ制限を厳しめに
-    const html = await readHead(response, OGP_MAX_BYTES);
+    const contentType = response.headers.get("content-type");
+    const html = await readHead(response, OGP_MAX_BYTES, contentType);
     return parseOgpFromHtml(html);
   } catch {
     return {};
@@ -57,15 +58,16 @@ export async function fetchOgpBatch(
   return map;
 }
 
-/** レスポンスから <head> 部分だけを読み取る */
-async function readHead(response: Response, maxBytes: number): Promise<string> {
+/** レスポンスから <head> 部分だけを読み取る（エンコーディング自動検出） */
+async function readHead(response: Response, maxBytes: number, contentType: string | null): Promise<string> {
   const reader = response.body?.getReader();
   if (!reader) return "";
 
   const chunks: Uint8Array[] = [];
   let totalSize = 0;
-  const decoder = new TextDecoder();
-  let accumulated = "";
+  // </head> 検出用に ASCII 互換でストリーミングデコード
+  const asciiDecoder = new TextDecoder("ascii");
+  let asciiAccumulated = "";
 
   while (true) {
     const { done, value } = await reader.read();
@@ -73,10 +75,9 @@ async function readHead(response: Response, maxBytes: number): Promise<string> {
 
     totalSize += value.length;
     chunks.push(value);
-    accumulated += decoder.decode(value, { stream: true });
+    asciiAccumulated += asciiDecoder.decode(value, { stream: true });
 
-    // </head> を見つけたら読み取り停止
-    if (accumulated.includes("</head>") || accumulated.includes("</HEAD>")) {
+    if (asciiAccumulated.includes("</head>") || asciiAccumulated.includes("</HEAD>")) {
       reader.cancel();
       break;
     }
@@ -87,7 +88,43 @@ async function readHead(response: Response, maxBytes: number): Promise<string> {
     }
   }
 
-  return accumulated;
+  // 全チャンクを結合して正しいエンコーディングでデコード
+  const bytes = new Uint8Array(totalSize);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  const encoding = detectHtmlEncoding(asciiAccumulated, contentType);
+  return new TextDecoder(encoding).decode(bytes);
+}
+
+/** Content-Type ヘッダーと HTML の meta charset からエンコーディングを検出 */
+function detectHtmlEncoding(asciiHtml: string, contentType: string | null): string {
+  // 1. Content-Type ヘッダーの charset
+  if (contentType) {
+    const match = contentType.match(/charset=([^\s;]+)/i);
+    if (match) return normalizeEncoding(match[1]);
+  }
+
+  // 2. <meta charset="...">
+  const charsetMatch = asciiHtml.match(/<meta\s+charset=["']([^"']+)["']/i);
+  if (charsetMatch) return normalizeEncoding(charsetMatch[1]);
+
+  // 3. <meta http-equiv="Content-Type" content="...; charset=...">
+  const httpEquivMatch = asciiHtml.match(/content=["'][^"']*charset=([^\s;"']+)/i);
+  if (httpEquivMatch) return normalizeEncoding(httpEquivMatch[1]);
+
+  return "utf-8";
+}
+
+function normalizeEncoding(encoding: string): string {
+  const lower = encoding.toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (lower === "eucjp" || lower === "xeucjp") return "euc-jp";
+  if (lower === "shiftjis" || lower === "xsjis" || lower === "sjis") return "shift_jis";
+  if (lower === "iso2022jp") return "iso-2022-jp";
+  return encoding.toLowerCase();
 }
 
 /** HTML の <head> から OGP メタタグをパース */

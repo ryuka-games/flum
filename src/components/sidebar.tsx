@@ -1,4 +1,4 @@
-import { Star, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/actions/auth";
@@ -28,11 +28,11 @@ export async function Sidebar() {
       {/* ナビゲーション */}
       <nav className="flex-1 overflow-y-auto px-2 py-2">
         <a
-          href="/favorites"
+          href="/scoops"
           className="mb-2 flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-zinc-800"
         >
-          <Star size={14} fill="currentColor" className="text-yellow-400" />
-          お気に入り
+          <span className="text-sm text-yellow-400">★</span>
+          Scoops
         </a>
 
         <p className="mb-1 px-2 text-xs font-semibold uppercase text-zinc-500">

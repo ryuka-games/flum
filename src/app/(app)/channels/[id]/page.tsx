@@ -6,6 +6,7 @@ import { deleteFeedSource, refreshChannel } from "@/app/actions/feed";
 import { AddFeedForm } from "@/components/add-feed-form";
 import { Dropdown } from "@/components/dropdown";
 import { FeedItemList } from "@/components/feed-item-list";
+import { FeedPresets, PresetChips } from "@/components/feed-presets";
 import { AutoRefresh } from "@/components/auto-refresh";
 
 export default async function ChannelPage({
@@ -31,25 +32,28 @@ export default async function ChannelPage({
     .eq("channel_id", id)
     .order("created_at", { ascending: true });
 
-  const feedSourceIds = (sources ?? []).map((s) => s.id);
+  const hasSources = sources && sources.length > 0;
+  const existingUrls = (sources ?? []).map((s) => s.url);
 
-  // sourceNameMap: feedSourceId → ソース名
+  // ソースがあるときだけフィードアイテムを取得
+  const feedSourceIds = (sources ?? []).map((s) => s.id);
   const sourceNameMap: Record<string, string> = {};
   for (const s of sources ?? []) {
     sourceNameMap[s.id] = s.name;
   }
 
-  // このチャンネルの全フィードアイテム
-  const { data: items } = await supabase
-    .from("feed_items")
-    .select("id, title, url, thumbnail_url, published_at, feed_source_id, og_image, og_description, content")
-    .in("feed_source_id", feedSourceIds.length > 0 ? feedSourceIds : [""])
-    .order("published_at", { ascending: false, nullsFirst: false })
-    .limit(100);
+  const { data: items } = hasSources
+    ? await supabase
+        .from("feed_items")
+        .select("id, title, url, thumbnail_url, published_at, feed_source_id, og_image, og_description, content")
+        .in("feed_source_id", feedSourceIds)
+        .order("published_at", { ascending: false, nullsFirst: false })
+        .limit(100)
+    : { data: null };
 
   // お気に入り済み URL 一覧
   const { data: favorites } = await supabase
-    .from("favorites")
+    .from("scoops")
     .select("url");
   const favoritedUrls = (favorites ?? []).map((f) => f.url);
 
@@ -69,28 +73,32 @@ export default async function ChannelPage({
           <div className="flex items-center gap-3">
             <Dropdown trigger={<span className="text-xl" title="ソース管理">+</span>}>
               <AddFeedForm channelId={channel.id} />
-              {sources && sources.length > 0 && (
+              <PresetChips channelId={channel.id} existingUrls={existingUrls} />
+              {hasSources && (
                 <>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {sources.map((source) => (
-                      <div
-                        key={source.id}
-                        className="flex items-center gap-1 rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-300"
-                      >
-                        <span className="max-w-[160px] truncate">{source.name}</span>
-                        <form action={deleteFeedSource} className="inline">
-                          <input type="hidden" name="id" value={source.id} />
-                          <input type="hidden" name="channel_id" value={channel.id} />
-                          <button
-                            type="submit"
-                            className="text-zinc-500 hover:text-red-400"
-                            title="ソース削除"
-                          >
-                            ×
-                          </button>
-                        </form>
-                      </div>
-                    ))}
+                  <div className="mt-3">
+                    <p className="mb-1.5 text-xs text-zinc-500">登録済み</p>
+                    <div className="flex flex-wrap gap-2">
+                      {sources.map((source) => (
+                        <div
+                          key={source.id}
+                          className="flex items-center gap-1 rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-300"
+                        >
+                          <span className="max-w-[160px] truncate">{source.name}</span>
+                          <form action={deleteFeedSource} className="inline">
+                            <input type="hidden" name="id" value={source.id} />
+                            <input type="hidden" name="channel_id" value={channel.id} />
+                            <button
+                              type="submit"
+                              className="text-zinc-500 hover:text-red-400"
+                              title="ソース削除"
+                            >
+                              ×
+                            </button>
+                          </form>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   <form action={refreshChannel} className="mt-3">
                     <input type="hidden" name="channel_id" value={channel.id} />
@@ -118,16 +126,20 @@ export default async function ChannelPage({
         </header>
       </div>
 
-      <AutoRefresh channelId={channel.id} />
-      <div>
-        <FeedItemList
-          items={items ?? []}
-          sourceNameMap={sourceNameMap}
-          favoritedUrls={favoritedUrls}
-          channelName={channel.name}
-          returnPath={`/channels/${id}`}
-        />
-      </div>
+      {hasSources ? (
+        <>
+          <AutoRefresh channelId={channel.id} />
+          <FeedItemList
+            items={items ?? []}
+            sourceNameMap={sourceNameMap}
+            favoritedUrls={favoritedUrls}
+            channelName={channel.name}
+            returnPath={`/channels/${id}`}
+          />
+        </>
+      ) : (
+        <FeedPresets channelId={channel.id} existingUrls={existingUrls} />
+      )}
     </>
   );
 }

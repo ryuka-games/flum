@@ -17,17 +17,17 @@ export async function toggleFavorite(formData: FormData) {
 
   // 既にお気に入りか確認
   const { data: existing } = await supabase
-    .from("favorites")
+    .from("scoops")
     .select("id")
     .eq("url", url)
     .single();
 
   if (existing) {
     // 解除
-    await supabase.from("favorites").delete().eq("id", existing.id);
+    await supabase.from("scoops").delete().eq("id", existing.id);
   } else {
     // 追加（記事データをコピー）
-    await supabase.from("favorites").insert({
+    await supabase.from("scoops").insert({
       user_id: user.id,
       title: (formData.get("title") as string) ?? "",
       url,
@@ -53,7 +53,7 @@ export async function removeFavorite(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  await supabase.from("favorites").delete().eq("id", id);
+  await supabase.from("scoops").delete().eq("id", id);
 
-  revalidatePath("/favorites");
+  revalidatePath("/scoops");
 }
