@@ -1,4 +1,4 @@
-import { LogOut } from "lucide-react";
+import { LogOut, Pin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/actions/auth";
@@ -31,7 +31,7 @@ export async function Sidebar() {
           href="/scoops"
           className="mb-2 flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-zinc-800"
         >
-          <span className="text-sm text-yellow-400">★</span>
+          <Pin size={14} className="text-blue-400" />
           Scoops
         </a>
 

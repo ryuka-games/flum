@@ -1,3 +1,4 @@
+import { Pin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { FeedItem } from "@/components/feed-item";
@@ -91,6 +92,7 @@ export default async function ScoopsPage({
                 ogImage={fav.og_image ?? undefined}
                 ogDescription={fav.og_description ?? undefined}
                 thumbnailUrl={fav.thumbnail_url ?? undefined}
+                noDecay
               />
             ))}
           </div>
@@ -99,7 +101,7 @@ export default async function ScoopsPage({
             <div className="text-center">
               <p className="mb-2">Scoop した記事はまだありません</p>
               <p className="text-sm text-zinc-700">
-                フィードの ★ をクリックして流れから掬い上げましょう
+                フィードの <Pin size={14} className="inline text-blue-400" /> をクリックして流れから掬い上げましょう
               </p>
             </div>
           </div>

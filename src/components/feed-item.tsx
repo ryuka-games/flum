@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Pin } from "lucide-react";
 import { toggleFavorite, removeFavorite } from "@/app/actions/favorite";
 import { ShareButtons } from "@/components/share-button";
 
@@ -59,7 +59,7 @@ const DECAY_END_HOURS = 24;
 const DECAY_MIN_OPACITY = 0.4;
 
 function getTimeDecayOpacity(publishedAt: string | null): number {
-  if (!publishedAt) return 1;
+  if (!publishedAt) return DECAY_MIN_OPACITY;
   const ageMs = Date.now() - new Date(publishedAt).getTime();
   if (isNaN(ageMs)) return 1;
   const ageHours = ageMs / 3_600_000;
@@ -82,6 +82,7 @@ export function FeedItem({
   ogDescription,
   thumbnailUrl,
   content,
+  noDecay,
 }: {
   title: string;
   url: string;
@@ -95,16 +96,17 @@ export function FeedItem({
   ogDescription?: string;
   thumbnailUrl?: string;
   content?: string;
+  noDecay?: boolean;
 }) {
   const domain = extractDomain(url);
   const imageUrl = ogImage ?? thumbnailUrl;
   const description = ogDescription ?? (content ? stripHtml(content) : undefined);
 
-  const opacity = getTimeDecayOpacity(publishedAt);
+  const opacity = noDecay ? 1 : getTimeDecayOpacity(publishedAt);
 
   return (
     <div
-      className="group relative hover:bg-zinc-800/40"
+      className="group relative transition-opacity hover:bg-zinc-800/40 hover:!opacity-100"
       style={opacity < 1 ? { opacity } : undefined}
     >
       {/* 行全体をカバーするリンク */}
@@ -180,10 +182,10 @@ export function FeedItem({
                 <input type="hidden" name="id" value={favoriteId} />
                 <button
                   type="submit"
-                  className="cursor-pointer text-yellow-400 hover:text-zinc-500"
+                  className="cursor-pointer text-blue-400 hover:text-zinc-500"
                   title="Scoop 解除"
                 >
-                  <Star size={14} fill="currentColor" />
+                  <Pin size={14} fill="currentColor" />
                 </button>
               </form>
             ) : (
@@ -201,10 +203,10 @@ export function FeedItem({
                 <input type="hidden" name="og_description" value={ogDescription ?? ""} />
                 <button
                   type="submit"
-                  className={`cursor-pointer ${isFavorited ? "text-yellow-400" : "text-zinc-600 hover:text-yellow-400"}`}
+                  className={`cursor-pointer ${isFavorited ? "text-blue-400" : "text-zinc-600 hover:text-blue-400"}`}
                   title={isFavorited ? "Scoop 解除" : "Scoop"}
                 >
-                  <Star size={14} fill={isFavorited ? "currentColor" : "none"} />
+                  <Pin size={14} fill={isFavorited ? "currentColor" : "none"} />
                 </button>
               </form>
             )}
