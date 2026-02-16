@@ -59,15 +59,15 @@ export default async function ChannelPage({
 
   return (
     <>
-      <div className="sticky top-0 z-20 bg-[#0a0a0a]">
-        <header className="flex items-center justify-between border-b border-zinc-800/50 px-4 py-3">
+      <div className="sticky top-0 z-40 bg-river-deep">
+        <header className="flex items-center justify-between px-4 py-3">
           <div>
-            <h2 className="text-lg font-semibold text-white">
-              <span className="mr-1 text-zinc-500">#</span>
+            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+              <span className="mr-1 text-[var(--text-muted)]">#</span>
               {channel.name}
             </h2>
             {channel.description && (
-              <p className="text-xs text-zinc-500">{channel.description}</p>
+              <p className="text-xs text-[var(--text-muted)]">{channel.description}</p>
             )}
           </div>
           <div className="flex items-center gap-3">
@@ -77,12 +77,12 @@ export default async function ChannelPage({
               {hasSources && (
                 <>
                   <div className="mt-3">
-                    <p className="mb-1.5 text-xs text-zinc-500">登録済み</p>
+                    <p className="mb-1.5 text-xs text-[var(--text-muted)]">登録済み</p>
                     <div className="flex flex-wrap gap-2">
                       {sources.map((source) => (
                         <div
                           key={source.id}
-                          className="flex items-center gap-1 rounded bg-zinc-800 px-2 py-1 text-xs text-zinc-300"
+                          className="flex items-center gap-1 rounded bg-river-surface px-2 py-1 text-xs text-[var(--text-secondary)]"
                         >
                           <span className="max-w-[160px] truncate">{source.name}</span>
                           <form action={deleteFeedSource} className="inline">
@@ -90,7 +90,7 @@ export default async function ChannelPage({
                             <input type="hidden" name="channel_id" value={channel.id} />
                             <button
                               type="submit"
-                              className="text-zinc-500 hover:text-red-400"
+                              className="text-[var(--text-muted)] hover:text-red-400"
                               title="ソース削除"
                             >
                               ×
@@ -104,7 +104,7 @@ export default async function ChannelPage({
                     <input type="hidden" name="channel_id" value={channel.id} />
                     <button
                       type="submit"
-                      className="w-full rounded bg-zinc-800 px-3 py-1.5 text-xs text-zinc-400 hover:bg-zinc-700 hover:text-white"
+                      className="w-full rounded bg-river-surface px-3 py-1.5 text-xs text-[var(--text-muted)] hover:bg-river-border hover:text-[var(--text-primary)]"
                     >
                       ↻ すべてのソースを更新
                     </button>
@@ -116,7 +116,7 @@ export default async function ChannelPage({
               <input type="hidden" name="id" value={channel.id} />
               <button
                 type="submit"
-                className="text-zinc-600 hover:text-red-400"
+                className="text-[var(--text-faded)] hover:text-red-400"
                 title="チャンネル削除"
               >
                 <Trash2 size={20} />
@@ -124,6 +124,7 @@ export default async function ChannelPage({
             </form>
           </div>
         </header>
+        <div className="h-[2px] bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan" />
       </div>
 
       {hasSources ? (
@@ -135,6 +136,7 @@ export default async function ChannelPage({
             favoritedUrls={favoritedUrls}
             channelName={channel.name}
             returnPath={`/channels/${id}`}
+            now={Date.now()}
           />
         </>
       ) : (

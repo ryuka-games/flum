@@ -1,26 +1,198 @@
 @import "tailwindcss";
 
+/* ============================================
+   Flum — Neon Pop × Blue River テーマ
+   背景=川（青）、コンテンツ=流れる情報（ネオンポップ）
+   ============================================ */
+
+/* --- 共通アクセント（テーマ問わず固定） --- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --accent-pink: #ff3b9a;
+  --accent-pink-light: #ff6bc1;
+  --accent-purple: #a855f7;
+  --accent-yellow: #ffdd00;
+  --accent-cyan: #00e5ff;
+
+  /* 鮮度ステージ（アクセント依存、テーマ問わず固定） */
+  --fresh-color: #ff3b9a;
+  --fresh-glow: 0 0 10px #ff3b9a, 0 0 4px #ff3b9a;
+  --recent-color: #ff6bc1;
+  --recent-glow: 0 0 6px rgba(255, 107, 193, 0.5);
+  --aging-color: #ffdd00;
+  --aging-glow: 0 0 6px rgba(255, 221, 0, 0.4);
+}
+
+/* --- Dark: 夜の深い川 --- */
+:root,
+[data-theme="dark"] {
+  --river-deep: #070e1a;
+  --river-bg: #0a1628;
+  --river-surface: #0f1f38;
+  --river-border: #1a3050;
+
+  --text-primary: #e8f0ff;
+  --text-secondary: #6890b0;
+  --text-muted: #507090;
+  --text-faded: #3a5070;
+
+  --old-color: #1e3a58;
+  --stale-color: #0f1f38;
+
+  --background: var(--river-bg);
+  --foreground: var(--text-primary);
+}
+
+/* --- Light: ネオンポップ（90/10ルール: 白キャンバス + 暗いサイドバー） --- */
+[data-theme="light"] {
+  --river-deep: #1a1a2e;
+  --river-bg: #f8f8fa;
+  --river-surface: #f0f0f5;
+  --river-border: #d8d8e0;
+
+  --text-primary: #1a1a2e;
+  --text-secondary: #5a5a70;
+  --text-muted: #9090a0;
+  --text-faded: #b8b8c8;
+
+  --old-color: #c8c8d0;
+  --stale-color: #d8d8e0;
+
+  --background: var(--river-bg);
+  --foreground: var(--text-primary);
+}
+
+/* Light: サイドバーはダークを維持（ネオンのアンカー） */
+[data-theme="light"] aside {
+  --river-deep: #070e1a;
+  --river-surface: #0f1f38;
+  --river-border: #1a3050;
+  --text-primary: #e8f0ff;
+  --text-secondary: #6890b0;
+  --text-muted: #507090;
+  --text-faded: #3a5070;
+}
+
+/* Light: ヘッダーもダークを維持（コンテンツとの境界を明確に） */
+[data-theme="light"] .sticky {
+  --river-deep: #1a1a2e;
+  --text-primary: #e8f0ff;
+  --text-muted: #8888a8;
+  --text-faded: #606078;
+}
+
+/* --- System preference fallback（明示的選択がないとき） --- */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --river-deep: #1a1a2e;
+    --river-bg: #f8f8fa;
+    --river-surface: #f0f0f5;
+    --river-border: #d8d8e0;
+
+    --text-primary: #1a1a2e;
+    --text-secondary: #5a5a70;
+    --text-muted: #9090a0;
+    --text-faded: #b8b8c8;
+
+    --old-color: #c8c8d0;
+    --stale-color: #d8d8e0;
+
+    --background: var(--river-bg);
+    --foreground: var(--text-primary);
+  }
+
+  :root:not([data-theme]) aside {
+    --river-deep: #070e1a;
+    --river-surface: #0f1f38;
+    --river-border: #1a3050;
+    --text-primary: #e8f0ff;
+    --text-secondary: #6890b0;
+    --text-muted: #507090;
+    --text-faded: #3a5070;
+  }
+
+  :root:not([data-theme]) .sticky {
+    --river-deep: #1a1a2e;
+    --text-primary: #e8f0ff;
+    --text-muted: #8888a8;
+    --text-faded: #606078;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* Tailwind カスタムカラー */
+  --color-river-deep: var(--river-deep);
+  --color-river-bg: var(--river-bg);
+  --color-river-surface: var(--river-surface);
+  --color-river-border: var(--river-border);
+  --color-neon-pink: var(--accent-pink);
+  --color-neon-pink-light: var(--accent-pink-light);
+  --color-neon-purple: var(--accent-purple);
+  --color-neon-yellow: var(--accent-yellow);
+  --color-neon-cyan: var(--accent-cyan);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* --- グリッチエフェクト（経年劣化: old / stale） --- */
+
+/* old: 控えめ — 5秒に1回、一瞬だけ RGB スプリット */
+.glitch-text {
+  animation: glitch-subtle 5s infinite;
+}
+
+@keyframes glitch-subtle {
+  0%, 93%, 95%, 100% {
+    text-shadow: none;
+    transform: none;
+  }
+  94% {
+    text-shadow: 2px 0 var(--accent-cyan), -2px 0 var(--accent-pink);
+    transform: translateX(-2px) skewX(-0.5deg);
+  }
+}
+
+/* stale: 攻め — 3秒に2回、ガタつく */
+.glitch-text-strong {
+  animation: glitch-strong 3s infinite;
+}
+
+@keyframes glitch-strong {
+  0%, 84%, 88%, 92%, 95%, 100% {
+    text-shadow: none;
+    transform: none;
+  }
+  85% {
+    text-shadow: 3px 0 var(--accent-cyan), -3px 0 var(--accent-pink);
+    transform: translateX(-3px) skewX(-1deg);
+  }
+  87% {
+    text-shadow: -2px 0 var(--accent-pink), 2px 0 var(--accent-cyan);
+    transform: translateX(2px) skewX(0.5deg);
+  }
+  93% {
+    text-shadow: 2px 0 var(--accent-cyan);
+    transform: translateX(-1px);
+  }
+  94% {
+    text-shadow: -1px 0 var(--accent-pink);
+    transform: translateX(1px) skewX(-0.5deg);
+  }
+}
+
+/* アクセシビリティ: 動き抑制設定 */
+@media (prefers-reduced-motion: reduce) {
+  .glitch-text,
+  .glitch-text-strong {
+    animation: none !important;
+  }
 }

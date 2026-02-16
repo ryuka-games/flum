@@ -18,12 +18,12 @@ export function AddFeedForm({ channelId }: { channelId: string }) {
           name="url"
           placeholder="RSS フィードの URL を入力"
           disabled={isPending}
-          className="w-full rounded bg-zinc-800 px-3 py-1.5 text-sm text-white placeholder-zinc-500 outline-none focus:ring-1 focus:ring-zinc-600 disabled:opacity-50"
+          className="w-full rounded bg-river-surface px-3 py-1.5 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none focus:ring-1 focus:ring-river-border disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={isPending}
-          className="flex-shrink-0 rounded bg-zinc-700 px-3 py-1.5 text-sm text-white hover:bg-zinc-600 disabled:opacity-50"
+          className="flex-shrink-0 rounded bg-river-border px-3 py-1.5 text-sm text-[var(--text-primary)] hover:bg-river-surface disabled:opacity-50"
         >
           {isPending ? "追加中..." : "追加"}
         </button>

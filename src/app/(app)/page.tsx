@@ -22,7 +22,7 @@ export default async function Home() {
 
   // チャンネルがない場合
   return (
-    <div className="flex flex-1 items-center justify-center text-zinc-500">
+    <div className="flex flex-1 items-center justify-center text-[var(--text-muted)]">
       <div className="text-center">
         <p className="mb-2 text-lg">チャンネルがありません</p>
         <p className="text-sm">← サイドバーからチャンネルを作成してください</p>

@@ -27,12 +27,12 @@ export function Dropdown({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="cursor-pointer text-zinc-500 hover:text-white"
+        className="cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-primary)]"
       >
         {trigger}
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-30 mt-2 w-80 rounded-lg border border-zinc-800 bg-zinc-900 p-3 shadow-lg">
+        <div className="absolute right-0 top-full z-30 mt-2 w-80 rounded-lg border border-river-border bg-river-deep p-3 shadow-lg">
           {children}
         </div>
       )}

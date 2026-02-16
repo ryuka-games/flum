@@ -1,9 +1,10 @@
 import { Pin } from "lucide-react";
 import { toggleFavorite, removeFavorite } from "@/app/actions/favorite";
 import { ShareButtons } from "@/components/share-button";
+import { DecayBackground, DecayOverlay } from "@/components/decay-layers";
+import { computeDecay } from "@/lib/decay";
 
-function timeAgo(dateStr: string): string {
-  const now = Date.now();
+function timeAgo(dateStr: string, now: number): string {
   const then = new Date(dateStr).getTime();
   if (isNaN(then)) return "";
 
@@ -19,16 +20,10 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("ja-JP");
 }
 
-// ソース名からハッシュベースの色を生成（Discord のデフォルトアバター風）
+// ソース名からハッシュベースの色を生成（ネオンカラー）
 const INITIAL_COLORS = [
-  "bg-blue-600",
-  "bg-emerald-600",
-  "bg-violet-600",
-  "bg-amber-600",
-  "bg-rose-600",
-  "bg-cyan-600",
-  "bg-indigo-600",
-  "bg-teal-600",
+  "bg-neon-pink", "bg-neon-purple", "bg-neon-cyan", "bg-emerald-500",
+  "bg-neon-pink-light", "bg-indigo-500", "bg-teal-500", "bg-violet-500",
 ];
 
 function getColorForName(name: string): string {
@@ -39,7 +34,6 @@ function getColorForName(name: string): string {
   return INITIAL_COLORS[Math.abs(hash) % INITIAL_COLORS.length];
 }
 
-/** 記事 URL からドメイン名を抽出 */
 function extractDomain(articleUrl: string): string {
   try {
     return new URL(articleUrl).hostname.replace(/^www\./, "");
@@ -48,25 +42,8 @@ function extractDomain(articleUrl: string): string {
   }
 }
 
-/** HTML タグを除去 */
 function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, "").trim();
-}
-
-/** 記事の経過時間から opacity を計算（時間減衰） */
-const DECAY_START_HOURS = 1;
-const DECAY_END_HOURS = 24;
-const DECAY_MIN_OPACITY = 0.4;
-
-function getTimeDecayOpacity(publishedAt: string | null): number {
-  if (!publishedAt) return DECAY_MIN_OPACITY;
-  const ageMs = Date.now() - new Date(publishedAt).getTime();
-  if (isNaN(ageMs)) return 1;
-  const ageHours = ageMs / 3_600_000;
-  if (ageHours <= DECAY_START_HOURS) return 1;
-  if (ageHours >= DECAY_END_HOURS) return DECAY_MIN_OPACITY;
-  const range = DECAY_END_HOURS - DECAY_START_HOURS;
-  return 1 - ((ageHours - DECAY_START_HOURS) / range) * (1 - DECAY_MIN_OPACITY);
 }
 
 export function FeedItem({
@@ -83,6 +60,7 @@ export function FeedItem({
   thumbnailUrl,
   content,
   noDecay,
+  now,
 }: {
   title: string;
   url: string;
@@ -97,29 +75,27 @@ export function FeedItem({
   thumbnailUrl?: string;
   content?: string;
   noDecay?: boolean;
+  now: number;
 }) {
   const domain = extractDomain(url);
   const imageUrl = ogImage ?? thumbnailUrl;
   const description = ogDescription ?? (content ? stripHtml(content) : undefined);
 
-  const opacity = noDecay ? 1 : getTimeDecayOpacity(publishedAt);
+  const decayState = computeDecay(url, publishedAt, now, noDecay);
+  const glitchClass = decayState?.glitchClass ?? "";
+  const kasureStyle = decayState?.kasureStyle;
 
   return (
-    <div
-      className="group relative transition-opacity hover:bg-zinc-800/40 hover:!opacity-100"
-      style={opacity < 1 ? { opacity } : undefined}
-    >
-      {/* 行全体をカバーするリンク */}
-      <a
-        href={url}
-        className="absolute inset-0 z-0 border-l-2 border-blue-500 visited:border-transparent"
-        aria-hidden="true"
-        tabIndex={-1}
-      />
+    <div className={`group relative ${decayState ? "overflow-hidden" : ""}`}>
+      {decayState && <DecayBackground state={decayState} />}
 
-      <div className="px-4 py-4">
+      {/* カード全体をクリッカブルにするリンク（z-10 でコンテンツの下、decay レイヤーの上） */}
+      <a href={url} className="absolute inset-0 z-10" aria-hidden="true" tabIndex={-1} />
+
+      {/* Layer 2: コンテンツ — pointer-events-none でクリックをリンクに通過させる */}
+      <div className={`pointer-events-none relative z-20 px-4 py-4 group-hover:bg-river-surface/60 ${glitchClass}`}>
         {/* ソース情報（上） */}
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
+        <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]" style={kasureStyle}>
           {sourceName && (
             <>
               <span
@@ -133,56 +109,53 @@ export function FeedItem({
           {domain && (
             <>
               <span>·</span>
-              <span className="flex-shrink-0 text-zinc-600">{domain}</span>
+              <span className="flex-shrink-0 text-[var(--text-muted)]">{domain}</span>
             </>
           )}
           {publishedAt && (
             <>
               <span>·</span>
-              <span className="flex-shrink-0">{timeAgo(publishedAt)}</span>
+              <span className="flex-shrink-0">{timeAgo(publishedAt, now)}</span>
             </>
           )}
         </div>
 
-        {/* タイトル + 説明 + 画像 */}
+        {/* タイトル */}
         <a
           href={url}
-          className="mt-1 line-clamp-2 block text-base font-medium leading-normal text-white visited:text-zinc-300"
+          className="mt-1 line-clamp-2 block text-base font-medium leading-normal text-[var(--text-primary)]"
+          style={kasureStyle}
         >
           {title}
         </a>
+
+        {/* 概要文 */}
         {description && (
-          <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-zinc-400">
+          <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-[var(--text-secondary)]" style={kasureStyle}>
             {description}
           </p>
         )}
+
         {imageUrl && (
-          <img
-            src={imageUrl}
-            alt=""
-            className="mt-3 w-full rounded-lg"
-            loading="lazy"
-          />
+          <img src={imageUrl} alt="" className="mt-3 w-full rounded-lg" loading="lazy" />
         )}
 
         {/* アクション行（下） */}
-        <div className="mt-3 flex items-center gap-2 text-xs text-zinc-500">
-          {channelName && (
-            <span className="truncate"># {channelName}</span>
-          )}
+        <div className="mt-3 flex items-center gap-2 text-xs text-[var(--text-muted)]">
+          {channelName && <span className="truncate"># {channelName}</span>}
           <span className="ml-auto flex flex-shrink-0 items-center gap-1.5">
-            <span className="opacity-0 transition-opacity group-hover:opacity-100">
+            <span className="pointer-events-auto opacity-0 transition-opacity group-hover:opacity-100">
               <ShareButtons title={title} url={url} />
             </span>
             {favoriteId ? (
               <form
                 action={removeFavorite}
-                className="relative z-10 opacity-0 transition-opacity group-hover:opacity-100"
+                className="pointer-events-auto relative z-10 opacity-0 transition-opacity group-hover:opacity-100"
               >
                 <input type="hidden" name="id" value={favoriteId} />
                 <button
                   type="submit"
-                  className="cursor-pointer text-blue-400 hover:text-zinc-500"
+                  className="cursor-pointer text-neon-pink hover:text-[var(--text-muted)]"
                   title="Scoop 解除"
                 >
                   <Pin size={14} fill="currentColor" />
@@ -191,7 +164,7 @@ export function FeedItem({
             ) : (
               <form
                 action={toggleFavorite}
-                className={`relative z-10 ${isFavorited ? "" : "opacity-0 group-hover:opacity-100"} transition-opacity`}
+                className={`pointer-events-auto relative z-10 ${isFavorited ? "" : "opacity-0 group-hover:opacity-100"} transition-opacity`}
               >
                 <input type="hidden" name="url" value={url} />
                 <input type="hidden" name="title" value={title} />
@@ -203,7 +176,7 @@ export function FeedItem({
                 <input type="hidden" name="og_description" value={ogDescription ?? ""} />
                 <button
                   type="submit"
-                  className={`cursor-pointer ${isFavorited ? "text-blue-400" : "text-zinc-600 hover:text-blue-400"}`}
+                  className={`cursor-pointer ${isFavorited ? "text-neon-pink" : "text-[var(--text-faded)] hover:text-neon-pink"}`}
                   title={isFavorited ? "Scoop 解除" : "Scoop"}
                 >
                   <Pin size={14} fill={isFavorited ? "currentColor" : "none"} />
@@ -213,6 +186,8 @@ export function FeedItem({
           </span>
         </div>
       </div>
+
+      {decayState && <DecayOverlay state={decayState} />}
     </div>
   );
 }

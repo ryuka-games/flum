@@ -34,10 +34,10 @@ export function AppShell({
     <div className="flex min-h-screen">
       <div className="sticky top-0 h-screen flex-shrink-0">
         {collapsed ? (
-          <div className="flex h-screen w-10 flex-col items-center bg-zinc-900 py-3">
+          <div className="flex h-screen w-10 flex-col items-center bg-river-deep py-3">
             <button
               onClick={toggle}
-              className="rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-white"
+              className="rounded p-1 text-[var(--text-secondary)] hover:bg-river-surface hover:text-white"
               title="サイドバーを表示"
             >
               ≡
@@ -47,7 +47,7 @@ export function AppShell({
           <div className="relative h-screen w-60">
             <button
               onClick={toggle}
-              className="absolute right-2 top-3 z-10 rounded p-1 text-zinc-500 hover:bg-zinc-800 hover:text-white"
+              className="absolute right-2 top-3 z-10 rounded p-1 text-[var(--text-secondary)] hover:bg-river-surface hover:text-white"
               title="サイドバーを非表示"
             >
               ←

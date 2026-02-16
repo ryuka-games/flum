@@ -18,19 +18,21 @@ export function FeedItemList({
   favoritedUrls,
   channelName,
   returnPath,
+  now,
 }: {
   items: FeedItemData[];
   sourceNameMap: Record<string, string>;
   favoritedUrls: string[];
   channelName: string;
   returnPath: string;
+  now: number;
 }) {
   if (items.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center py-20 text-zinc-600">
+      <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-muted)]">
         <div className="text-center">
           <p className="mb-2">フィードはまだありません</p>
-          <p className="text-sm text-zinc-700">
+          <p className="text-sm text-[var(--text-faded)]">
             RSS ソースを追加するとここにフィードが表示されます
           </p>
         </div>
@@ -39,7 +41,7 @@ export function FeedItemList({
   }
 
   return (
-    <div className="mx-auto max-w-xl divide-y divide-zinc-800/50">
+    <div className="mx-auto max-w-xl divide-y divide-river-border/50">
       {items.map((item) => (
         <FeedItem
           key={item.id}
@@ -54,6 +56,7 @@ export function FeedItemList({
           ogDescription={item.og_description ?? undefined}
           thumbnailUrl={item.thumbnail_url ?? undefined}
           content={item.content ?? undefined}
+          now={now}
         />
       ))}
     </div>
