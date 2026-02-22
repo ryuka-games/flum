@@ -1,10 +1,34 @@
+"use client";
+
+import { useSyncExternalStore } from "react";
 import { Pin } from "lucide-react";
 import { toggleFavorite, removeFavorite } from "@/app/actions/favorite";
 import { ShareButtons } from "@/components/share-button";
-import { DecayBackground, DecayOverlay } from "@/components/decay-layers";
-import { computeDecay } from "@/lib/decay";
+import { getDecayStyle } from "@/lib/decay";
+
+/** useSyncExternalStore 用: 購読不要（静的スナップショット） */
+const noopSubscribe = () => () => {};
+
+/**
+ * クライアント専用の現在時刻。
+ * getSnapshot はキャッシュ必須（毎回異なる値を返すと無限ループ）。
+ * モジュールロード時に一度だけ Date.now() を計算して以降は同じ値を返す。
+ *
+ * getServerSnapshot = 0 → SSR/ハイドレーション時はdecay/timeAgoなし（安定HTML）
+ * getSnapshot = cachedNow → ハイドレーション後に同期再レンダリング
+ */
+let cachedNow = 0;
+function getClientNow(): number {
+  if (!cachedNow) cachedNow = Date.now();
+  return cachedNow;
+}
+
+function useClientNow(): number {
+  return useSyncExternalStore(noopSubscribe, getClientNow, () => 0);
+}
 
 function timeAgo(dateStr: string, now: number): string {
+  if (!now) return "";
   const then = new Date(dateStr).getTime();
   if (isNaN(then)) return "";
 
@@ -51,6 +75,7 @@ export function FeedItem({
   url,
   sourceName,
   publishedAt,
+  fetchedAt,
   channelName,
   returnPath,
   isFavorited,
@@ -60,12 +85,12 @@ export function FeedItem({
   thumbnailUrl,
   content,
   noDecay,
-  now,
 }: {
   title: string;
   url: string;
   sourceName: string;
   publishedAt: string | null;
+  fetchedAt?: number;
   channelName?: string;
   returnPath?: string;
   isFavorited?: boolean;
@@ -75,27 +100,36 @@ export function FeedItem({
   thumbnailUrl?: string;
   content?: string;
   noDecay?: boolean;
-  now: number;
 }) {
+  const now = useClientNow();
   const domain = extractDomain(url);
   const imageUrl = ogImage ?? thumbnailUrl;
   const description = ogDescription ?? (content ? stripHtml(content) : undefined);
 
-  const decayState = computeDecay(url, publishedAt, now, noDecay);
-  const glitchClass = decayState?.glitchClass ?? "";
-  const kasureStyle = decayState?.kasureStyle;
+  const decay = now ? getDecayStyle(publishedAt, now, noDecay) : null;
 
   return (
-    <div className={`group relative ${decayState ? "overflow-hidden" : ""}`}>
-      {decayState && <DecayBackground state={decayState} />}
-
-      {/* カード全体をクリッカブルにするリンク（z-10 でコンテンツの下、decay レイヤーの上） */}
+    <div
+      className="group relative rounded-2xl hover:shadow-[3px_3px_0_var(--decay-shadow,var(--accent-pink))]"
+      data-decay={decay ? "true" : undefined}
+      data-freshness={decay?.freshness ?? "fresh"}
+      style={
+        decay
+          ? {
+              filter: decay.filter,
+              opacity: decay.opacity,
+              "--decay-shadow": decay.shadowColor,
+            } as React.CSSProperties
+          : undefined
+      }
+    >
+      {/* カード全体をクリッカブルにするリンク */}
       <a href={url} className="absolute inset-0 z-10" aria-hidden="true" tabIndex={-1} />
 
-      {/* Layer 2: コンテンツ — pointer-events-none でクリックをリンクに通過させる */}
-      <div className={`pointer-events-none relative z-20 px-4 py-4 group-hover:bg-river-surface/60 ${glitchClass}`}>
+      {/* コンテンツ */}
+      <div className={`pointer-events-none relative z-20 px-4 py-4 group-hover:bg-river-surface/60 ${decay?.className ?? ""}`}>
         {/* ソース情報（上） */}
-        <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]" style={kasureStyle}>
+        <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
           {sourceName && (
             <>
               <span
@@ -112,45 +146,51 @@ export function FeedItem({
               <span className="flex-shrink-0 text-[var(--text-muted)]">{domain}</span>
             </>
           )}
-          {publishedAt && (
+          {publishedAt ? (
             <>
               <span>·</span>
               <span className="flex-shrink-0">{timeAgo(publishedAt, now)}</span>
             </>
-          )}
+          ) : fetchedAt ? (
+            <>
+              <span>·</span>
+              <span className="flex-shrink-0 italic text-[var(--text-faded)]" title="取得日時（公開日不明）">
+                {timeAgo(new Date(fetchedAt).toISOString(), now)}
+              </span>
+            </>
+          ) : null}
         </div>
 
         {/* タイトル */}
         <a
           href={url}
           className="mt-1 line-clamp-2 block text-base font-medium leading-normal text-[var(--text-primary)]"
-          style={kasureStyle}
         >
           {title}
         </a>
 
         {/* 概要文 */}
         {description && (
-          <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-[var(--text-secondary)]" style={kasureStyle}>
+          <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-[var(--text-secondary)]">
             {description}
           </p>
         )}
 
         {imageUrl && (
-          <img src={imageUrl} alt="" className="mt-3 w-full rounded-lg" loading="lazy" />
+          <img src={imageUrl} alt="" className="mt-3 w-full rounded-xl" loading="lazy" />
         )}
 
         {/* アクション行（下） */}
         <div className="mt-3 flex items-center gap-2 text-xs text-[var(--text-muted)]">
           {channelName && <span className="truncate"># {channelName}</span>}
           <span className="ml-auto flex flex-shrink-0 items-center gap-1.5">
-            <span className="pointer-events-auto opacity-0 transition-opacity group-hover:opacity-100">
+            <span className="pointer-events-auto opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
               <ShareButtons title={title} url={url} />
             </span>
             {favoriteId ? (
               <form
                 action={removeFavorite}
-                className="pointer-events-auto relative z-10 opacity-0 transition-opacity group-hover:opacity-100"
+                className="pointer-events-auto relative z-10 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100"
               >
                 <input type="hidden" name="id" value={favoriteId} />
                 <button
@@ -164,7 +204,7 @@ export function FeedItem({
             ) : (
               <form
                 action={toggleFavorite}
-                className={`pointer-events-auto relative z-10 ${isFavorited ? "" : "opacity-0 group-hover:opacity-100"} transition-opacity`}
+                className={`pointer-events-auto relative z-10 ${isFavorited ? "" : "opacity-100 md:opacity-0 md:group-hover:opacity-100"} transition-opacity`}
               >
                 <input type="hidden" name="url" value={url} />
                 <input type="hidden" name="title" value={title} />
@@ -186,8 +226,6 @@ export function FeedItem({
           </span>
         </div>
       </div>
-
-      {decayState && <DecayOverlay state={decayState} />}
     </div>
   );
 }

@@ -1,54 +1,75 @@
-/** 経年劣化システム — 鮮度判定・設定・計算ロジック */
+/**
+ * 経年劣化システム v5 — カラードレイン
+ *
+ * 色 = エネルギー。古い記事は色を失い、冷たくなる。
+ * ホバーで瞬時にフルカラー復活（カラーフラッシュ）。
+ *
+ * リファレンス:
+ *   Splatoon — Splattercolor Screen: 彩度剥奪 = 弱体化
+ *   Persona 5 — 彩度 + 色温度シフト = 感情状態の変化
+ *   Hi-Fi Rush — パルス = 生きている感
+ *   ドーナドーナ — UI は絶対に汚れない
+ */
+
+const DISPLAY_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 export type FreshnessStage = "fresh" | "recent" | "aging" | "old" | "stale";
 
-export type DecayConfig = {
-  scale: number;
-  freq: string;
-  color: string;
-  creases?: { count: number; opacity: number; warp: number };
-  kasure?: { baseFreq: string; slope: number; intercept: number };
-  glitch?: "subtle" | "strong";
-  halftone?: number;
+export type DecayStyle = {
+  /** CSS filter 文字列 */
+  filter: string;
+  opacity: number;
+  /** ホバーシャドウの色（鮮度で変わる: warm → cold） */
+  shadowColor: string;
+  /** CSS class（glitch 等） */
+  className: string;
+  /** data-freshness 属性値 */
+  freshness: FreshnessStage;
 };
 
 /**
- * 経年劣化の設定
- *  scale: 端の侵食の強さ（displacement）
- *  freq: 侵食ノイズの細かさ
- *  color: 破れ・ひび割れから覗くネオン色
- *  creases: 折り目/しわ線（CSS linear-gradient + SVG displacement）
- *  kasure: テキストのインク剥がれ（ソース情報 + タイトル + 概要文に適用）
- *  glitch: RGB スプリット + 揺れアニメーション
- *  halftone: ドットトーン（最上位オーバーレイ）
+ * 鮮度ステージごとのカラードレイン設定
+ *
+ * シャドウ色の温度遷移（Persona 5 式）:
+ *   pink(熱い) → purple(冷え始め) → cyan(冷たい) → 消失
  */
-export const DECAY_CONFIG: Record<FreshnessStage, DecayConfig | null> = {
+const DECAY_STAGES: Record<FreshnessStage, DecayStyle | null> = {
   fresh: null,
-  recent: { scale: 6, freq: "0.035", color: "var(--accent-pink)" },
+  recent: {
+    filter: "saturate(0.85) brightness(0.97)",
+    opacity: 0.95,
+    shadowColor: "var(--accent-pink)",
+    className: "",
+    freshness: "recent",
+  },
   aging: {
-    scale: 10, freq: "0.04", color: "var(--accent-pink)",
-    creases: { count: 2, opacity: 0.15, warp: 15 },
-    kasure: { baseFreq: "1.5", slope: 3, intercept: -0.8 },
-    halftone: 0.15,
+    filter: "saturate(0.45) brightness(0.92) sepia(0.15) hue-rotate(190deg)",
+    opacity: 0.8,
+    shadowColor: "var(--accent-purple)",
+    className: "",
+    freshness: "aging",
   },
   old: {
-    scale: 14, freq: "0.045", color: "var(--accent-pink)",
-    creases: { count: 3, opacity: 0.2, warp: 25 },
-    kasure: { baseFreq: "1.2", slope: 3.5, intercept: -0.6 },
-    glitch: "subtle",
-    halftone: 0.25,
+    filter: "saturate(0.15) brightness(0.85) sepia(0.25) hue-rotate(190deg)",
+    opacity: 0.65,
+    shadowColor: "var(--accent-cyan)",
+    className: "",
+    freshness: "old",
   },
   stale: {
-    scale: 20, freq: "0.05", color: "var(--accent-pink)",
-    creases: { count: 5, opacity: 0.3, warp: 35 },
-    kasure: { baseFreq: "1.0", slope: 4, intercept: -0.4 },
-    glitch: "strong",
-    halftone: 0.35,
+    filter: "saturate(0.05) brightness(0.78) sepia(0.3) hue-rotate(200deg)",
+    opacity: 0.4,
+    shadowColor: "var(--old-color)",
+    className: "glitch-text",
+    freshness: "stale",
   },
 };
 
 /** 記事の経過時間から鮮度ステージを判定 */
-export function getFreshnessStage(publishedAt: string | null, now: number): FreshnessStage {
+export function getFreshnessStage(
+  publishedAt: string | null,
+  now: number,
+): FreshnessStage {
   if (!publishedAt) return "stale";
   const ageMs = now - new Date(publishedAt).getTime();
   if (isNaN(ageMs)) return "fresh";
@@ -56,62 +77,29 @@ export function getFreshnessStage(publishedAt: string | null, now: number): Fres
   if (ageHours < 1) return "fresh";
   if (ageHours < 6) return "recent";
   if (ageHours < 12) return "aging";
-  if (ageHours < 24) return "old";
+  if (ageHours < 18) return "old";
   return "stale";
 }
 
-/** 文字列から決定論的ハッシュを生成（SVG filter の seed に使用） */
-export function hashCode(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return Math.abs(hash);
+/** publishedAt が24時間超なら true。null の場合は fetchedAt でフォールバック。 */
+export function isExpired(
+  publishedAt: string | null,
+  fetchedAt: number,
+  now: number,
+): boolean {
+  const ageMs = publishedAt
+    ? now - new Date(publishedAt).getTime()
+    : now - fetchedAt;
+  if (isNaN(ageMs)) return false;
+  return ageMs >= DISPLAY_MAX_AGE_MS;
 }
 
-export type CreaseLine = { angle: number; pos: number };
-
-/** 折り目線の角度・位置をハッシュから決定論的に生成 */
-export function generateCreaseLines(hash: number, count: number): CreaseLine[] {
-  return Array.from({ length: count }, (_, i) => ({
-    angle: ((hash >>> (i * 7)) & 0xff) % 160 + 10,    // 10-170° (水平すぎない)
-    pos: 20 + (((hash >>> (i * 5 + 3)) & 0xff) % 60), // 20-80% の位置
-  }));
-}
-
-/** Decay の計算結果 */
-export type DecayState = {
-  decay: DecayConfig;
-  seed: number;
-  filterId: string;
-  creaseFilterId: string;
-  creaseLines: CreaseLine[];
-  kasureId: string;
-  glitchClass: string;
-  kasureStyle: { filter: string } | undefined;
-};
-
-/** URL・鮮度から全 decay パラメータを計算 */
-export function computeDecay(
-  url: string,
+/** 鮮度からスタイルを取得 */
+export function getDecayStyle(
   publishedAt: string | null,
   now: number,
   noDecay?: boolean,
-): DecayState | null {
-  const stage = noDecay ? "fresh" : getFreshnessStage(publishedAt, now);
-  const decay = DECAY_CONFIG[stage];
-  if (!decay) return null;
-
-  const hash = hashCode(url);
-  const seed = hash % 1000;
-  const filterId = `decay-${hash}`;
-  const creaseFilterId = decay.creases ? `crease-${hash}` : "";
-  const creaseLines = decay.creases ? generateCreaseLines(hash, decay.creases.count) : [];
-  const kasureId = decay.kasure ? `kasure-${hash}` : "";
-  const glitchClass =
-    decay.glitch === "strong" ? "glitch-text-strong" :
-    decay.glitch === "subtle" ? "glitch-text" : "";
-  const kasureStyle = kasureId ? { filter: `url(#${kasureId})` } : undefined;
-
-  return { decay, seed, filterId, creaseFilterId, creaseLines, kasureId, glitchClass, kasureStyle };
+): DecayStyle | null {
+  if (noDecay) return null;
+  return DECAY_STAGES[getFreshnessStage(publishedAt, now)];
 }

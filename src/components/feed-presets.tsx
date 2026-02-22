@@ -2,6 +2,7 @@
 
 import { useTransition, useState } from "react";
 import { addFeedSource } from "@/app/actions/feed";
+import { putItems } from "@/lib/feed/store";
 import { FEED_PRESETS, type FeedPreset } from "@/lib/feed/presets";
 import { AddFeedForm } from "./add-feed-form";
 
@@ -29,7 +30,7 @@ export function FeedPresets({
   const categories = groupByCategory(FEED_PRESETS);
 
   return (
-    <div className="mx-auto max-w-xl px-4 py-16 text-center">
+    <div className="mx-auto max-w-xl bg-[var(--glass-bg)] backdrop-blur-md px-4 py-16 text-center">
       <h3 className="text-lg font-semibold text-[var(--text-primary)]">
         フィードを追加しましょう
       </h3>
@@ -65,7 +66,7 @@ export function FeedPresets({
   );
 }
 
-/** ドロップダウン用の小さめプリセット一覧 */
+/** ドロップダウン用の小さめプリセット一覧（カテゴリ付き） */
 export function PresetChips({
   channelId,
   existingUrls,
@@ -73,26 +74,33 @@ export function PresetChips({
   channelId: string;
   existingUrls: string[];
 }) {
-  const available = FEED_PRESETS.filter(
-    (p) => !existingUrls.includes(p.url),
+  const categories = groupByCategory(
+    FEED_PRESETS.filter((p) => !existingUrls.includes(p.url)),
   );
 
-  if (available.length === 0) return null;
+  if (categories.length === 0) return null;
 
   return (
     <div className="mt-3">
       <p className="mb-1.5 text-xs text-[var(--text-muted)]">おすすめ</p>
-      <div className="flex flex-wrap gap-1.5">
-        {available.map((preset) => (
-          <PresetButton
-            key={preset.url}
-            channelId={channelId}
-            preset={preset}
-            isAdded={false}
-            compact
-          />
-        ))}
-      </div>
+      {categories.map(([category, presets]) => (
+        <div key={category}>
+          <p className="mb-1 mt-2 first:mt-0 text-[10px] font-bold uppercase tracking-wider text-[var(--text-faded)]">
+            {category}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {presets.map((preset) => (
+              <PresetButton
+                key={preset.url}
+                channelId={channelId}
+                preset={preset}
+                isAdded={false}
+                compact
+              />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -122,6 +130,9 @@ function PresetButton({
       if (result.error) {
         setError(result.error);
       } else {
+        if (result.items && result.items.length > 0) {
+          await putItems(result.items);
+        }
         setAdded(true);
       }
     });
@@ -130,8 +141,8 @@ function PresetButton({
   const disabled = isPending || added;
 
   const baseStyle = compact
-    ? "rounded px-2 py-0.5 text-xs"
-    : "rounded-lg px-3 py-1.5 text-sm";
+    ? "rounded-full px-2.5 py-0.5 text-xs"
+    : "rounded-xl px-3 py-1.5 text-sm";
 
   return (
     <button

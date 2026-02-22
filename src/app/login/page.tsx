@@ -23,7 +23,7 @@ export default function LoginPage() {
         </p>
         <button
           onClick={handleGitHubLogin}
-          className="rounded-lg border-2 border-neon-pink bg-neon-pink px-6 py-3 font-bold text-white shadow-[3px_3px_0_var(--accent-cyan)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0_var(--accent-cyan)]"
+          className="rounded-full border-2 border-neon-pink bg-neon-pink px-8 py-3 font-bold text-white shadow-[3px_3px_0_var(--accent-cyan)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[1px_1px_0_var(--accent-cyan)]"
         >
           GitHub でログイン
         </button>

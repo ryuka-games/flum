@@ -45,3 +45,14 @@ docs/articles/
 CONTEXT-SNAPSHOT.md
 CLAUDE.md
 CLAUDE.local.md
+
+# Claude Code
+.claude/
+
+# Playwright MCP
+.playwright-mcp/
+
+# debug screenshots & temp files
+*.png
+!public/**/*.png
+color-sample.html

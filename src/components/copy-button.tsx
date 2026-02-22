@@ -14,7 +14,7 @@ export function CopyButton({ url }: { url: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="cursor-pointer rounded px-1 text-[var(--text-faded)] hover:bg-river-surface hover:text-[var(--text-secondary)]"
+      className="cursor-pointer rounded-lg px-1 text-[var(--text-faded)] hover:text-[var(--text-primary)]"
       title="URL をコピー"
     >
       {copied ? "✓" : "URL"}

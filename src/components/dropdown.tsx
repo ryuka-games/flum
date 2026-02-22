@@ -32,7 +32,7 @@ export function Dropdown({
         {trigger}
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-30 mt-2 w-80 rounded-lg border border-river-border bg-river-deep p-3 shadow-lg">
+        <div className="fixed inset-x-3 bottom-3 z-30 max-h-[70vh] overflow-y-auto rounded-2xl border-2 border-neon-pink bg-river-deep p-3 shadow-[4px_4px_0_var(--accent-cyan)] sm:absolute sm:inset-auto sm:bottom-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80">
           {children}
         </div>
       )}

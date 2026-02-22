@@ -39,20 +39,26 @@ export async function fetchOgpData(url: string): Promise<OgpData> {
   }
 }
 
+const OGP_CONCURRENCY = 8;
+
 /**
  * 複数の URL から OGP を並列取得して Map で返す。
+ * 同時実行数を OGP_CONCURRENCY に制限（数百件のフィードでサーバーをハングさせない）。
  */
 export async function fetchOgpBatch(
   urls: string[],
 ): Promise<Map<string, OgpData>> {
-  const results = await Promise.allSettled(
-    urls.map(async (url) => ({ url, data: await fetchOgpData(url) })),
-  );
-
   const map = new Map<string, OgpData>();
-  for (const result of results) {
-    if (result.status === "fulfilled" && result.value.data.image) {
-      map.set(result.value.url, result.value.data);
+  // 同時実行数を制限してバッチ処理
+  for (let i = 0; i < urls.length; i += OGP_CONCURRENCY) {
+    const batch = urls.slice(i, i + OGP_CONCURRENCY);
+    const results = await Promise.allSettled(
+      batch.map(async (url) => ({ url, data: await fetchOgpData(url) })),
+    );
+    for (const result of results) {
+      if (result.status === "fulfilled" && result.value.data.image) {
+        map.set(result.value.url, result.value.data);
+      }
     }
   }
   return map;

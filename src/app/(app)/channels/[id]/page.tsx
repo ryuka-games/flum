@@ -2,12 +2,13 @@ import { Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { deleteChannel } from "@/app/actions/channel";
-import { deleteFeedSource, refreshChannel } from "@/app/actions/feed";
+import { deleteFeedSource } from "@/app/actions/feed";
 import { AddFeedForm } from "@/components/add-feed-form";
 import { Dropdown } from "@/components/dropdown";
-import { FeedItemList } from "@/components/feed-item-list";
 import { FeedPresets, PresetChips } from "@/components/feed-presets";
-import { AutoRefresh } from "@/components/auto-refresh";
+import { ChannelFeedView } from "@/components/channel-feed-view";
+import { RefreshButton } from "@/components/refresh-button";
+import { WallpaperPicker } from "@/components/wallpaper-picker";
 
 export default async function ChannelPage({
   params,
@@ -35,32 +36,22 @@ export default async function ChannelPage({
   const hasSources = sources && sources.length > 0;
   const existingUrls = (sources ?? []).map((s) => s.url);
 
-  // ソースがあるときだけフィードアイテムを取得
   const feedSourceIds = (sources ?? []).map((s) => s.id);
   const sourceNameMap: Record<string, string> = {};
   for (const s of sources ?? []) {
     sourceNameMap[s.id] = s.name;
   }
 
-  const { data: items } = hasSources
-    ? await supabase
-        .from("feed_items")
-        .select("id, title, url, thumbnail_url, published_at, feed_source_id, og_image, og_description, content")
-        .in("feed_source_id", feedSourceIds)
-        .order("published_at", { ascending: false, nullsFirst: false })
-        .limit(100)
-    : { data: null };
-
   // お気に入り済み URL 一覧
   const { data: favorites } = await supabase
     .from("scoops")
     .select("url");
-  const favoritedUrls = (favorites ?? []).map((f) => f.url);
+  const scoopedUrls = (favorites ?? []).map((f) => f.url);
 
   return (
     <>
       <div className="sticky top-0 z-40 bg-river-deep">
-        <header className="flex items-center justify-between px-4 py-3">
+        <header className="flex items-center justify-between px-4 py-3 pl-14 md:pl-4">
           <div>
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">
               <span className="mr-1 text-[var(--text-muted)]">#</span>
@@ -82,7 +73,7 @@ export default async function ChannelPage({
                       {sources.map((source) => (
                         <div
                           key={source.id}
-                          className="flex items-center gap-1 rounded bg-river-surface px-2 py-1 text-xs text-[var(--text-secondary)]"
+                          className="flex items-center gap-1 rounded-full bg-river-surface px-2.5 py-1 text-xs text-[var(--text-secondary)]"
                         >
                           <span className="max-w-[160px] truncate">{source.name}</span>
                           <form action={deleteFeedSource} className="inline">
@@ -100,17 +91,12 @@ export default async function ChannelPage({
                       ))}
                     </div>
                   </div>
-                  <form action={refreshChannel} className="mt-3">
-                    <input type="hidden" name="channel_id" value={channel.id} />
-                    <button
-                      type="submit"
-                      className="w-full rounded bg-river-surface px-3 py-1.5 text-xs text-[var(--text-muted)] hover:bg-river-border hover:text-[var(--text-primary)]"
-                    >
-                      ↻ すべてのソースを更新
-                    </button>
-                  </form>
+                  <div className="mt-3">
+                    <RefreshButton channelId={channel.id} feedSourceIds={feedSourceIds} />
+                  </div>
                 </>
               )}
+              <WallpaperPicker channelId={channel.id} />
             </Dropdown>
             <form action={deleteChannel}>
               <input type="hidden" name="id" value={channel.id} />
@@ -124,21 +110,16 @@ export default async function ChannelPage({
             </form>
           </div>
         </header>
-        <div className="h-[2px] bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan" />
       </div>
 
       {hasSources ? (
-        <>
-          <AutoRefresh channelId={channel.id} />
-          <FeedItemList
-            items={items ?? []}
-            sourceNameMap={sourceNameMap}
-            favoritedUrls={favoritedUrls}
-            channelName={channel.name}
-            returnPath={`/channels/${id}`}
-            now={Date.now()}
-          />
-        </>
+        <ChannelFeedView
+          channelId={channel.id}
+          channelName={channel.name}
+          feedSourceIds={feedSourceIds}
+          sourceNameMap={sourceNameMap}
+          scoopedUrls={scoopedUrls}
+        />
       ) : (
         <FeedPresets channelId={channel.id} existingUrls={existingUrls} />
       )}

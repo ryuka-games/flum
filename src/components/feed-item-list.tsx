@@ -10,6 +10,7 @@ type FeedItemData = {
   og_image: string | null;
   og_description: string | null;
   content: string | null;
+  fetchedAt?: number;
 };
 
 export function FeedItemList({
@@ -18,14 +19,12 @@ export function FeedItemList({
   favoritedUrls,
   channelName,
   returnPath,
-  now,
 }: {
   items: FeedItemData[];
   sourceNameMap: Record<string, string>;
   favoritedUrls: string[];
   channelName: string;
   returnPath: string;
-  now: number;
 }) {
   if (items.length === 0) {
     return (
@@ -41,7 +40,7 @@ export function FeedItemList({
   }
 
   return (
-    <div className="mx-auto max-w-xl divide-y divide-river-border/50">
+    <div className="mx-auto max-w-xl divide-y divide-river-border/50 bg-[var(--glass-bg)] backdrop-blur-md">
       {items.map((item) => (
         <FeedItem
           key={item.id}
@@ -49,6 +48,7 @@ export function FeedItemList({
           url={item.url}
           sourceName={sourceNameMap[item.feed_source_id] ?? ""}
           publishedAt={item.published_at}
+          fetchedAt={item.fetchedAt}
           channelName={channelName}
           returnPath={returnPath}
           isFavorited={favoritedUrls.includes(item.url)}
@@ -56,7 +56,6 @@ export function FeedItemList({
           ogDescription={item.og_description ?? undefined}
           thumbnailUrl={item.thumbnail_url ?? undefined}
           content={item.content ?? undefined}
-          now={now}
         />
       ))}
     </div>

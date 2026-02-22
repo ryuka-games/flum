@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Pin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -41,38 +42,37 @@ export default async function ScoopsPage({
   return (
     <>
       <div className="sticky top-0 z-40 bg-river-deep">
-        <header className="px-4 py-3">
+        <header className="px-4 py-3 pl-14 md:pl-4">
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">
             Scoops
           </h2>
         </header>
-        <div className="h-[2px] bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan" />
 
         {/* チャンネルフィルタ */}
         {channelNames.length > 0 && (
           <div className="flex flex-wrap gap-2 border-b border-river-border px-4 py-2">
-            <a
+            <Link
               href="/scoops"
-              className={`rounded border-2 px-2 py-0.5 text-xs transition-colors ${
+              className={`rounded-full border-2 px-3 py-0.5 text-xs transition-colors ${
                 !filterChannel
                   ? "border-neon-pink bg-neon-pink font-bold text-white shadow-[2px_2px_0_var(--accent-cyan)]"
                   : "border-river-border bg-river-surface text-[var(--text-muted)] hover:border-neon-pink hover:text-[var(--text-primary)]"
               }`}
             >
               すべて
-            </a>
+            </Link>
             {channelNames.map((name) => (
-              <a
+              <Link
                 key={name}
                 href={`/scoops?channel=${encodeURIComponent(name)}`}
-                className={`rounded border-2 px-2 py-0.5 text-xs transition-colors ${
+                className={`rounded-full border-2 px-3 py-0.5 text-xs transition-colors ${
                   filterChannel === name
                     ? "border-neon-pink bg-neon-pink font-bold text-white shadow-[2px_2px_0_var(--accent-cyan)]"
                     : "border-river-border bg-river-surface text-[var(--text-muted)] hover:border-neon-pink hover:text-[var(--text-primary)]"
                 }`}
               >
                 # {name}
-              </a>
+              </Link>
             ))}
           </div>
         )}
@@ -80,7 +80,7 @@ export default async function ScoopsPage({
 
       <div>
         {favorites && favorites.length > 0 ? (
-          <div className="mx-auto max-w-xl divide-y divide-river-border/50">
+          <div className="mx-auto max-w-xl divide-y divide-river-border/50 bg-black/95 backdrop-blur-md">
             {favorites.map((fav) => (
               <FeedItem
                 key={fav.id}
@@ -94,7 +94,6 @@ export default async function ScoopsPage({
                 ogDescription={fav.og_description ?? undefined}
                 thumbnailUrl={fav.thumbnail_url ?? undefined}
                 noDecay
-                now={Date.now()}
               />
             ))}
           </div>

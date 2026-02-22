@@ -22,100 +22,27 @@
   --aging-glow: 0 0 6px rgba(255, 221, 0, 0.4);
 }
 
-/* --- Dark: 夜の深い川 --- */
+/* --- Dark: ネオンポップの舞台（近黒 + ビビッドアクセント） --- */
 :root,
 [data-theme="dark"] {
-  --river-deep: #070e1a;
-  --river-bg: #0a1628;
-  --river-surface: #0f1f38;
-  --river-border: #1a3050;
+  --river-deep: #0a0a10;
+  --river-bg: #101018;
+  --river-surface: #18182a;
+  --river-border: #2a2a40;
 
-  --text-primary: #e8f0ff;
-  --text-secondary: #6890b0;
-  --text-muted: #507090;
-  --text-faded: #3a5070;
+  --text-primary: #e8e8f0;
+  --text-secondary: #8888a8;
+  --text-muted: #606078;
+  --text-faded: #404058;
 
   --old-color: #1e3a58;
   --stale-color: #0f1f38;
 
-  --background: var(--river-bg);
-  --foreground: var(--text-primary);
-}
-
-/* --- Light: ネオンポップ（90/10ルール: 白キャンバス + 暗いサイドバー） --- */
-[data-theme="light"] {
-  --river-deep: #1a1a2e;
-  --river-bg: #f8f8fa;
-  --river-surface: #f0f0f5;
-  --river-border: #d8d8e0;
-
-  --text-primary: #1a1a2e;
-  --text-secondary: #5a5a70;
-  --text-muted: #9090a0;
-  --text-faded: #b8b8c8;
-
-  --old-color: #c8c8d0;
-  --stale-color: #d8d8e0;
+  --glass-bg: rgba(0, 0, 0, 0.95);
+  --glass-overlay: rgba(0, 0, 0, 0.50);
 
   --background: var(--river-bg);
   --foreground: var(--text-primary);
-}
-
-/* Light: サイドバーはダークを維持（ネオンのアンカー） */
-[data-theme="light"] aside {
-  --river-deep: #070e1a;
-  --river-surface: #0f1f38;
-  --river-border: #1a3050;
-  --text-primary: #e8f0ff;
-  --text-secondary: #6890b0;
-  --text-muted: #507090;
-  --text-faded: #3a5070;
-}
-
-/* Light: ヘッダーもダークを維持（コンテンツとの境界を明確に） */
-[data-theme="light"] .sticky {
-  --river-deep: #1a1a2e;
-  --text-primary: #e8f0ff;
-  --text-muted: #8888a8;
-  --text-faded: #606078;
-}
-
-/* --- System preference fallback（明示的選択がないとき） --- */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) {
-    --river-deep: #1a1a2e;
-    --river-bg: #f8f8fa;
-    --river-surface: #f0f0f5;
-    --river-border: #d8d8e0;
-
-    --text-primary: #1a1a2e;
-    --text-secondary: #5a5a70;
-    --text-muted: #9090a0;
-    --text-faded: #b8b8c8;
-
-    --old-color: #c8c8d0;
-    --stale-color: #d8d8e0;
-
-    --background: var(--river-bg);
-    --foreground: var(--text-primary);
-  }
-
-  :root:not([data-theme]) aside {
-    --river-deep: #070e1a;
-    --river-surface: #0f1f38;
-    --river-border: #1a3050;
-    --text-primary: #e8f0ff;
-    --text-secondary: #6890b0;
-    --text-muted: #507090;
-    --text-faded: #3a5070;
-  }
-
-  :root:not([data-theme]) .sticky {
-    --river-deep: #1a1a2e;
-    --text-primary: #e8f0ff;
-    --text-muted: #8888a8;
-    --text-faded: #606078;
-  }
 }
 
 @theme inline {
@@ -133,6 +60,10 @@
   --color-neon-yellow: var(--accent-yellow);
   --color-neon-cyan: var(--accent-cyan);
 
+  /* インタラクショントークン */
+  --color-int-accent: var(--accent-cyan);   /* Secondary/bordered ホバーアクセント */
+  --color-int-danger: #f87171;               /* Destructive ホバー */
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -143,56 +74,247 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* --- グリッチエフェクト（経年劣化: old / stale） --- */
+/* サイドバーの微細ドットパターン（ドーナドーナのスクリーントーン要素） */
+aside {
+  background-image: radial-gradient(circle, rgba(255, 59, 154, 0.03) 1px, transparent 1px);
+  background-size: 12px 12px;
+}
 
-/* old: 控えめ — 5秒に1回、一瞬だけ RGB スプリット */
+/* --- カラードレイン ---
+   Splatoon: 彩度剥奪 = 弱体化
+   Persona 5: 彩度 + 色温度シフト = 状態変化
+   非対称トランジション: ゆっくり色を失い、瞬時に復活（カラーフラッシュ） */
+
+/* 色を失う方向: ゆっくり（ページ表示時） */
+[data-decay="true"] {
+  transition: filter 1.2s ease-out, opacity 1.2s ease-out;
+}
+
+/* ホバー: 瞬時復帰（0.08s）= Splatoon の「色が戻る」快感 */
+[data-decay="true"]:hover {
+  filter: none !important;
+  opacity: 1 !important;
+  transition: filter 0.08s ease-out, opacity 0.08s ease-out;
+}
+
+/* --- fresh パルス（Hi-Fi Rush 式: パルス = 生きてる感） ---
+   < 1時間の記事だけ、ピンクの光が2回パルス。「さっき届いたよ」のシグナル */
+[data-freshness="fresh"] {
+  animation: fresh-pulse 1.5s ease-in-out 2;
+}
+
+@keyframes fresh-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 59, 154, 0); }
+  50% { box-shadow: 0 0 8px 4px rgba(255, 59, 154, 0.3); }
+}
+
+/* --- グリッチエフェクト（stale: 18-24h、消失直前） --- */
 .glitch-text {
-  animation: glitch-subtle 5s infinite;
+  animation: glitch 3.5s infinite;
 }
 
-@keyframes glitch-subtle {
-  0%, 93%, 95%, 100% {
-    text-shadow: none;
-    transform: none;
-  }
-  94% {
-    text-shadow: 2px 0 var(--accent-cyan), -2px 0 var(--accent-pink);
-    transform: translateX(-2px) skewX(-0.5deg);
-  }
-}
-
-/* stale: 攻め — 3秒に2回、ガタつく */
-.glitch-text-strong {
-  animation: glitch-strong 3s infinite;
-}
-
-@keyframes glitch-strong {
-  0%, 84%, 88%, 92%, 95%, 100% {
-    text-shadow: none;
-    transform: none;
-  }
-  85% {
+@keyframes glitch {
+  0%, 100% { text-shadow: none; transform: none; }
+  /* 1回目: ガタッ */
+  24% { text-shadow: none; transform: none; }
+  25% {
     text-shadow: 3px 0 var(--accent-cyan), -3px 0 var(--accent-pink);
     transform: translateX(-3px) skewX(-1deg);
   }
-  87% {
+  27% { text-shadow: none; transform: translateX(1px); }
+  28% { transform: none; }
+  /* 2回目: ビリッ（連打感） */
+  30% {
     text-shadow: -2px 0 var(--accent-pink), 2px 0 var(--accent-cyan);
     transform: translateX(2px) skewX(0.5deg);
   }
-  93% {
-    text-shadow: 2px 0 var(--accent-cyan);
-    transform: translateX(-1px);
-  }
-  94% {
-    text-shadow: -1px 0 var(--accent-pink);
-    transform: translateX(1px) skewX(-0.5deg);
-  }
+  32% { text-shadow: none; transform: none; }
 }
 
 /* アクセシビリティ: 動き抑制設定 */
 @media (prefers-reduced-motion: reduce) {
   .glitch-text,
-  .glitch-text-strong {
+  [data-freshness="fresh"] {
     animation: none !important;
+  }
+}
+
+/* ============================================
+   デフォルト背景デコ — 夜の川（River at Night）
+   Flum = Flume（水路）。星が川面に映り、光が水面で揺れる。
+   ============================================ */
+
+/* ✦ 星空 — 3層のドットグリッドで奥行き（Moiré 効果） */
+.river-stars-far {
+  background-image:
+    radial-gradient(circle, rgba(200, 210, 255, 0.8) 0.5px, transparent 0.5px);
+  background-size: 11px 13px;
+  opacity: 0.04;
+}
+
+.river-stars-mid {
+  background-image:
+    radial-gradient(circle, rgba(220, 230, 255, 0.9) 0.8px, transparent 0.8px);
+  background-size: 29px 31px;
+  opacity: 0.06;
+}
+
+.river-stars-near {
+  background-image:
+    radial-gradient(circle, white 1.2px, transparent 1.2px);
+  background-size: 67px 71px;
+  opacity: 0.07;
+}
+
+/* 星空は上半分に集中（川面は下半分） */
+.river-sky {
+  mask-image: linear-gradient(to bottom, black 30%, transparent 65%);
+  -webkit-mask-image: linear-gradient(to bottom, black 30%, transparent 65%);
+}
+
+/* ～ 水面の反射 — 星のミラーリング（強ぼかし + 横引き伸ばし）
+   blur(6px) + scaleX(3) でドットが横の光筋に滲む = 水面感 */
+.river-reflection {
+  mask-image: linear-gradient(to top, black 20%, transparent 55%);
+  -webkit-mask-image: linear-gradient(to top, black 20%, transparent 55%);
+  filter: blur(6px);
+  transform: scaleX(3) scaleY(-1);
+  transform-origin: center 60%;
+  opacity: 1.2;
+}
+
+/* ◉ 揺らめき — 水面で光が踊る（呼吸パルス） */
+.river-shimmer {
+  position: absolute;
+  border-radius: 50%;
+  animation: shimmer-pulse 4s ease-in-out infinite;
+}
+
+.river-shimmer-1 {
+  width: 120px; height: 6px;
+  bottom: 30%; left: 15%;
+  background: radial-gradient(ellipse, var(--accent-pink), transparent 70%);
+  opacity: 0.12;
+}
+
+.river-shimmer-2 {
+  width: 80px; height: 4px;
+  bottom: 38%; right: 20%;
+  background: radial-gradient(ellipse, var(--accent-cyan), transparent 70%);
+  opacity: 0.10;
+  animation-delay: -1.5s;
+}
+
+.river-shimmer-3 {
+  width: 60px; height: 3px;
+  bottom: 25%; left: 55%;
+  background: radial-gradient(ellipse, white, transparent 70%);
+  opacity: 0.08;
+  animation-delay: -3s;
+}
+
+.river-shimmer-4 {
+  width: 100px; height: 5px;
+  bottom: 42%; left: 35%;
+  background: radial-gradient(ellipse, var(--accent-purple), transparent 70%);
+  opacity: 0.09;
+  animation-delay: -2.2s;
+}
+
+@keyframes shimmer-pulse {
+  0%, 100% { transform: scaleX(1); opacity: var(--shimmer-base, 0.1); }
+  50% { transform: scaleX(1.4); opacity: calc(var(--shimmer-base, 0.1) * 1.8); }
+}
+
+/* ─ 水流ライン — 水平に漂う光の筋（情報の流れ） */
+.river-flow {
+  position: absolute;
+  height: 1px;
+  animation: flow-drift 20s linear infinite;
+}
+
+.river-flow-1 {
+  width: 40%;
+  bottom: 35%;
+  left: -10%;
+  background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+  opacity: 0.08;
+}
+
+.river-flow-2 {
+  width: 30%;
+  bottom: 28%;
+  left: -5%;
+  background: linear-gradient(90deg, transparent, var(--accent-pink), transparent);
+  opacity: 0.06;
+  animation-delay: -8s;
+  animation-duration: 25s;
+}
+
+.river-flow-3 {
+  width: 50%;
+  bottom: 44%;
+  left: -15%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  opacity: 0.05;
+  animation-delay: -14s;
+  animation-duration: 30s;
+}
+
+@keyframes flow-drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(100vw + 20%)); }
+}
+
+/* ◎ 環境光 — 川面に映る街の灯り */
+.river-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+}
+
+.river-glow-pink {
+  width: 300px; height: 200px;
+  bottom: 10%; right: 5%;
+  background: var(--accent-pink);
+  opacity: 0.04;
+}
+
+.river-glow-cyan {
+  width: 250px; height: 180px;
+  top: 15%; left: 5%;
+  background: var(--accent-cyan);
+  opacity: 0.03;
+}
+
+/* ── 水平線 — 空と水面の境界 */
+.river-horizon {
+  position: absolute;
+  top: 55%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 5%,
+    rgba(200, 210, 255, 0.10) 30%,
+    rgba(200, 210, 255, 0.15) 50%,
+    rgba(200, 210, 255, 0.10) 70%,
+    transparent 95%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .river-shimmer,
+  .river-flow { animation: none; }
+  .river-shimmer { opacity: 0.08; }
+}
+
+/* 壁紙レイヤー: モバイルでは全幅、デスクトップではサイドバー分オフセット */
+.wallpaper-left {
+  left: 0;
+}
+@media (min-width: 768px) {
+  .wallpaper-left {
+    left: var(--sidebar-width);
   }
 }

@@ -1,10 +1,11 @@
+import Link from "next/link";
 import { LogOut, Pin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/actions/auth";
 import { createChannel } from "@/app/actions/channel";
 import { ChannelLink } from "@/components/channel-link";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { OpmlImport } from "@/components/opml-import";
 
 export async function Sidebar() {
   const supabase = await createClient();
@@ -25,20 +26,19 @@ export async function Sidebar() {
       <div className="px-4 py-3">
         <h1 className="text-lg font-bold text-[var(--text-primary)]">Flum</h1>
       </div>
-      <div className="h-[2px] bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan" />
 
       {/* ナビゲーション */}
       <nav className="flex-1 overflow-y-auto px-2 py-2">
-        <a
+        <Link
           href="/scoops"
-          className="mb-2 flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-river-surface"
+          className="mb-2 flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm font-medium hover:bg-river-surface hover:text-[var(--text-primary)]"
         >
           <Pin size={14} className="text-neon-pink" />
           Scoops
-        </a>
+        </Link>
 
-        <p className="mb-1 px-2 text-xs font-semibold uppercase text-[var(--text-muted)]">
-          チャンネル
+        <p className="mb-1 px-2 text-[10px] font-bold uppercase tracking-widest text-[var(--text-faded)]">
+          CHANNELS
         </p>
         {channels?.map((channel) => (
           <ChannelLink key={channel.id} id={channel.id} name={channel.name} />
@@ -51,16 +51,21 @@ export async function Sidebar() {
               type="text"
               name="name"
               placeholder="新しいチャンネル"
-              className="w-full rounded bg-river-surface px-2 py-1 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none focus:ring-1 focus:ring-river-border"
+              className="w-full rounded-xl bg-river-surface px-3 py-1 text-sm text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none focus:ring-1 focus:ring-river-border"
             />
             <button
               type="submit"
-              className="rounded bg-river-border px-2 py-1 text-sm text-[var(--text-primary)] hover:bg-river-surface"
+              className="rounded-full border-2 border-neon-pink bg-neon-pink px-3 py-1 text-sm font-bold text-white shadow-[2px_2px_0_var(--accent-cyan)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_var(--accent-cyan)]"
             >
               +
             </button>
           </div>
         </form>
+
+        {/* OPML インポート */}
+        <div className="px-1">
+          <OpmlImport />
+        </div>
       </nav>
 
       {/* ユーザー情報 + ログアウト */}
@@ -76,7 +81,6 @@ export async function Sidebar() {
           <span className="flex-1 truncate text-sm text-[var(--text-primary)]">
             {user.user_metadata.user_name ?? user.email}
           </span>
-          <ThemeToggle />
           <form action={signOut}>
             <button
               type="submit"

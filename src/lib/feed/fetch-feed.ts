@@ -202,7 +202,7 @@ function extractItems(result: ReturnType<typeof parseFeed>, rawXml: string): Fee
       url,
       content: extractString(item.description ?? item.summary ?? item.content),
       thumbnailUrl: extractThumbnailUrl(item) ?? xmlImageMap.get(url),
-      publishedAt: extractString(
+      publishedAt: extractDcDate(item) ?? extractString(
         item.pubDate ?? item.published ?? item.updated ?? item.date,
       ),
     });
@@ -323,8 +323,81 @@ function isLikelyImageUrl(url: string): boolean {
   }
 }
 
+/** Dublin Core の dc:date を取得（feedsmith は item.dc.date に Date オブジェクトで格納） */
+function extractDcDate(item: Record<string, unknown>): string | undefined {
+  if (item.dc && typeof item.dc === "object") {
+    const dc = item.dc as Record<string, unknown>;
+    if (dc.date instanceof Date) return dc.date.toISOString();
+    if (typeof dc.date === "string") return dc.date;
+    if (Array.isArray(dc.dates) && dc.dates[0] instanceof Date) {
+      return dc.dates[0].toISOString();
+    }
+  }
+  return undefined;
+}
+
 /** unknown を string に安全に変換 */
 function extractString(value: unknown): string | undefined {
   if (typeof value === "string") return value;
   return undefined;
+}
+
+/**
+ * サイト URL から RSS/Atom フィード URL を自動検出する（Auto-Discovery）。
+ * HTML の <link rel="alternate" type="application/rss+xml"> タグを探す。
+ */
+export async function discoverFeedUrl(siteUrl: string): Promise<string | null> {
+  const validation = validateFeedUrl(siteUrl);
+  if (!validation.valid) return null;
+
+  const hostname = new URL(siteUrl).hostname;
+  if (await checkPrivateIp(hostname)) return null;
+
+  try {
+    const response = await fetch(siteUrl, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: {
+        "User-Agent": "Flum/1.0 RSS Reader",
+        Accept: "text/html",
+      },
+    });
+
+    if (!response.ok) return null;
+
+    // <head> 内だけ読めば十分なので先頭部分のみ取得
+    const text = await readWithSizeLimit(response, MAX_RESPONSE_BYTES, response.headers.get("content-type"));
+    const headMatch = text.match(/<head[\s>][\s\S]*?<\/head>/i);
+    const head = headMatch ? headMatch[0] : text.slice(0, 10_000);
+
+    // <link rel="alternate" type="application/rss+xml" href="...">
+    // <link rel="alternate" type="application/atom+xml" href="...">
+    const linkRegex = /<link[^>]+rel=["']alternate["'][^>]+type=["']application\/(rss|atom)\+xml["'][^>]*>/gi;
+    let match;
+    while ((match = linkRegex.exec(head)) !== null) {
+      const hrefMatch = match[0].match(/href=["']([^"']+)["']/);
+      if (hrefMatch) {
+        const href = hrefMatch[1];
+        // 相対 URL を絶対 URL に変換
+        try {
+          return new URL(href, siteUrl).toString();
+        } catch {
+          continue;
+        }
+      }
+    }
+
+    // href が先に来るパターンも対応
+    const linkRegex2 = /<link[^>]+href=["']([^"']+)["'][^>]+type=["']application\/(rss|atom)\+xml["'][^>]*>/gi;
+    while ((match = linkRegex2.exec(head)) !== null) {
+      try {
+        return new URL(match[1], siteUrl).toString();
+      } catch {
+        continue;
+      }
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
 }

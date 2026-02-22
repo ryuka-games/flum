@@ -1,14 +1,44 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { fetchAndParseFeed } from "@/lib/feed/fetch-feed";
+import { fetchAndParseFeed, discoverFeedUrl, type FeedItem } from "@/lib/feed/fetch-feed";
 import { fetchOgpBatch } from "@/lib/feed/fetch-ogp";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+export type FeedItemPayload = {
+  feedSourceId: string;
+  title: string;
+  url: string;
+  content: string | null;
+  thumbnailUrl: string | null;
+  publishedAt: string | null;
+  ogImage: string | null;
+  ogDescription: string | null;
+};
+
 export type FeedActionState = {
   error?: string;
+  items?: FeedItemPayload[];
 };
+
+/**
+ * パース済みアイテムを直近だけに絞る。
+ * - publishedAt が48h以内 or 日付なし → 通過
+ * - それでも多ければ先頭50件で打ち切り（日付なしフィードの安全弁）
+ */
+const ITEM_CUTOFF_MS = 48 * 60 * 60 * 1000;
+const ITEM_MAX_COUNT = 50;
+
+function filterRecentItems(items: FeedItem[]): FeedItem[] {
+  const now = Date.now();
+  const recent = items.filter((item) => {
+    if (!item.publishedAt) return true;
+    const age = now - new Date(item.publishedAt).getTime();
+    return !isNaN(age) && age < ITEM_CUTOFF_MS;
+  });
+  return recent.slice(0, ITEM_MAX_COUNT);
+}
 
 export async function addFeedSource(
   prevState: FeedActionState,
@@ -28,18 +58,28 @@ export async function addFeedSource(
   if (!user) redirect("/login");
 
   // RSS フェッチ + パース（初回なので条件付きヘッダーなし）
-  const result = await fetchAndParseFeed(url);
+  // パース失敗時はサイト URL として auto-discovery を試行
+  let feedUrl = url;
+  let result = await fetchAndParseFeed(url);
   if (!result.success) {
-    return { error: result.error };
+    const discovered = await discoverFeedUrl(url);
+    if (!discovered) {
+      return { error: result.error };
+    }
+    feedUrl = discovered;
+    result = await fetchAndParseFeed(feedUrl);
+    if (!result.success) {
+      return { error: result.error };
+    }
   }
   if ("notModified" in result) {
     return { error: "フィードを取得できませんでした" };
   }
 
-  // feed_sources に INSERT
+  // feed_sources に INSERT（発見した feedUrl を保存）
   const { data: source, error: sourceError } = await supabase
     .from("feed_sources")
-    .insert({ channel_id: channelId, name: result.feed.title, url })
+    .insert({ channel_id: channelId, name: result.feed.title, url: feedUrl })
     .select("id")
     .single();
 
@@ -51,28 +91,24 @@ export async function addFeedSource(
     return { error: "ソースの登録に失敗しました" };
   }
 
-  // feed_items に upsert（OGP 並列フェッチ付き）
-  if (result.feed.items.length > 0) {
+  // フィードアイテムをクライアントに返す（OGP 並列フェッチ付き）
+  const recentItems = filterRecentItems(result.feed.items);
+  let items: FeedItemPayload[] = [];
+  if (recentItems.length > 0) {
     const ogpMap = await fetchOgpBatch(
-      result.feed.items.map((item) => item.url),
+      recentItems.map((item) => item.url),
     );
 
-    const items = result.feed.items.map((item) => ({
-      feed_source_id: source.id,
-      user_id: user.id,
+    items = recentItems.map((item) => ({
+      feedSourceId: source.id,
       title: item.title,
       url: item.url,
       content: item.content ?? null,
-      thumbnail_url: item.thumbnailUrl ?? null,
-      published_at: item.publishedAt ?? null,
-      og_image: ogpMap.get(item.url)?.image ?? null,
-      og_description: ogpMap.get(item.url)?.description ?? null,
+      thumbnailUrl: item.thumbnailUrl ?? null,
+      publishedAt: item.publishedAt ?? null,
+      ogImage: ogpMap.get(item.url)?.image ?? null,
+      ogDescription: ogpMap.get(item.url)?.description ?? null,
     }));
-
-    await supabase.from("feed_items").upsert(items, {
-      onConflict: "feed_source_id,url",
-      ignoreDuplicates: true,
-    });
   }
 
   // last_fetched_at + 条件付きヘッダーを保存
@@ -86,7 +122,7 @@ export async function addFeedSource(
     .eq("id", source.id);
 
   revalidatePath(`/channels/${channelId}`);
-  return {};
+  return { items };
 }
 
 export async function deleteFeedSource(formData: FormData) {
@@ -100,18 +136,15 @@ export async function deleteFeedSource(formData: FormData) {
   revalidatePath(`/channels/${channelId}`);
 }
 
-export async function refreshChannel(formData: FormData) {
-  const channelId = formData.get("channel_id") as string;
-  if (!channelId) return;
-  await refreshChannelById(channelId);
-}
-
-export async function refreshChannelById(channelId: string) {
+/** チャンネルの全ソースをフェッチして items を返す */
+export async function refreshChannelById(
+  channelId: string,
+): Promise<FeedItemPayload[]> {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return [];
 
   // チャンネルの全ソースを取得（条件付きヘッダー含む）
   const { data: sources } = await supabase
@@ -119,7 +152,9 @@ export async function refreshChannelById(channelId: string) {
     .select("id, url, etag, last_modified_header")
     .eq("channel_id", channelId);
 
-  if (!sources || sources.length === 0) return;
+  if (!sources || sources.length === 0) return [];
+
+  const allItems: FeedItemPayload[] = [];
 
   // 全ソースを並列フェッチ
   await Promise.allSettled(
@@ -139,27 +174,24 @@ export async function refreshChannelById(channelId: string) {
         return;
       }
 
-      if (result.feed.items.length > 0) {
+      const recentItems = filterRecentItems(result.feed.items);
+      if (recentItems.length > 0) {
         const ogpMap = await fetchOgpBatch(
-          result.feed.items.map((item) => item.url),
+          recentItems.map((item) => item.url),
         );
 
-        const items = result.feed.items.map((item) => ({
-          feed_source_id: source.id,
-          user_id: user.id,
+        const items = recentItems.map((item) => ({
+          feedSourceId: source.id,
           title: item.title,
           url: item.url,
           content: item.content ?? null,
-          thumbnail_url: item.thumbnailUrl ?? null,
-          published_at: item.publishedAt ?? null,
-          og_image: ogpMap.get(item.url)?.image ?? null,
-          og_description: ogpMap.get(item.url)?.description ?? null,
+          thumbnailUrl: item.thumbnailUrl ?? null,
+          publishedAt: item.publishedAt ?? null,
+          ogImage: ogpMap.get(item.url)?.image ?? null,
+          ogDescription: ogpMap.get(item.url)?.description ?? null,
         }));
 
-        await supabase.from("feed_items").upsert(items, {
-          onConflict: "feed_source_id,url",
-          ignoreDuplicates: true,
-        });
+        allItems.push(...items);
       }
 
       await supabase
@@ -173,5 +205,5 @@ export async function refreshChannelById(channelId: string) {
     }),
   );
 
-  revalidatePath(`/channels/${channelId}`);
+  return allItems;
 }

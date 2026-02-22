@@ -14,16 +14,19 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Flum",
-  description: "Discord-style real-time feed reader",
+  description: "Channel-based real-time feed reader",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Flum",
+  },
 };
 
-/** localStorage → data-theme を描画前に設定（FOUC 防止） */
-const themeScript = `(function(){
-  var t=localStorage.getItem('flum-theme');
-  if(t==='light'||t==='dark'){document.documentElement.dataset.theme=t}
-  else if(matchMedia('(prefers-color-scheme:light)').matches){document.documentElement.dataset.theme='light'}
-  else{document.documentElement.dataset.theme='dark'}
-})();`;
+/** data-theme=dark を描画前に設定（FOUC 防止） */
+const themeScript = `document.documentElement.dataset.theme='dark';`;
+
+const swScript = `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}`;
 
 export default function RootLayout({
   children,
@@ -34,6 +37,9 @@ export default function RootLayout({
     <html lang="ja" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: swScript }} />
+        <meta name="theme-color" content="#ff3b7a" />
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
