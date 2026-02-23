@@ -66,8 +66,20 @@ function extractDomain(articleUrl: string): string {
   }
 }
 
+const HTML_ENTITIES: Record<string, string> = {
+  "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"',
+  "&apos;": "'", "&nbsp;": " ",
+};
+
+function decodeEntities(text: string): string {
+  return text
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+    .replace(/&(?:amp|lt|gt|quot|apos|nbsp);/g, (m) => HTML_ENTITIES[m] ?? m);
+}
+
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, "").trim();
+  return decodeEntities(html.replace(/<[^>]*>/g, "")).trim();
 }
 
 export function FeedItem({
@@ -85,6 +97,8 @@ export function FeedItem({
   thumbnailUrl,
   content,
   noDecay,
+  enterIndex,
+  hideChannelLabel,
 }: {
   title: string;
   url: string;
@@ -100,6 +114,8 @@ export function FeedItem({
   thumbnailUrl?: string;
   content?: string;
   noDecay?: boolean;
+  enterIndex?: number;
+  hideChannelLabel?: boolean;
 }) {
   const now = useClientNow();
   const domain = extractDomain(url);
@@ -110,17 +126,21 @@ export function FeedItem({
 
   return (
     <div
-      className="group relative rounded-2xl hover:shadow-[3px_3px_0_var(--decay-shadow,var(--accent-pink))]"
+      className="group relative overflow-hidden rounded-2xl hover:shadow-[3px_3px_0_var(--decay-shadow,var(--accent-pink))]"
       data-decay={decay ? "true" : undefined}
       data-freshness={decay?.freshness ?? "fresh"}
+      data-card-enter={enterIndex != null ? "" : undefined}
       style={
-        decay
-          ? {
-              filter: decay.filter,
-              opacity: decay.opacity,
-              "--decay-shadow": decay.shadowColor,
-            } as React.CSSProperties
-          : undefined
+        {
+          ...(decay && {
+            filter: decay.filter,
+            "--decay-opacity": decay.opacity,
+            "--decay-shadow": decay.shadowColor,
+          }),
+          ...(enterIndex != null && {
+            "--enter-delay": `${enterIndex * 120}ms`,
+          }),
+        } as React.CSSProperties
       }
     >
       {/* カード全体をクリッカブルにするリンク */}
@@ -177,12 +197,12 @@ export function FeedItem({
         )}
 
         {imageUrl && (
-          <img src={imageUrl} alt="" className="mt-3 w-full rounded-xl" loading="lazy" />
+          <img src={imageUrl} alt="" className="mt-3 max-h-64 w-full rounded-xl object-contain" loading="lazy" />
         )}
 
         {/* アクション行（下） */}
         <div className="mt-3 flex items-center gap-2 text-xs text-[var(--text-muted)]">
-          {channelName && <span className="truncate"># {channelName}</span>}
+          {channelName && !hideChannelLabel && <span className="truncate"># {channelName}</span>}
           <span className="ml-auto flex flex-shrink-0 items-center gap-1.5">
             <span className="pointer-events-auto opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
               <ShareButtons title={title} url={url} />
@@ -196,7 +216,7 @@ export function FeedItem({
                 <button
                   type="submit"
                   className="cursor-pointer text-neon-pink hover:text-[var(--text-muted)]"
-                  title="Scoop 解除"
+                  aria-label="Scoop 解除"
                 >
                   <Pin size={14} fill="currentColor" />
                 </button>
@@ -217,7 +237,7 @@ export function FeedItem({
                 <button
                   type="submit"
                   className={`cursor-pointer ${isFavorited ? "text-neon-pink" : "text-[var(--text-faded)] hover:text-neon-pink"}`}
-                  title={isFavorited ? "Scoop 解除" : "Scoop"}
+                  aria-label={isFavorited ? "Scoop 解除" : "Scoop"}
                 >
                   <Pin size={14} fill={isFavorited ? "currentColor" : "none"} />
                 </button>

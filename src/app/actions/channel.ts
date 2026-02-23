@@ -32,6 +32,11 @@ export async function deleteChannel(formData: FormData) {
   if (!id) return;
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
   await supabase.from("channels").delete().eq("id", id);
 
   revalidatePath("/");

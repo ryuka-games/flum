@@ -6,6 +6,7 @@ import { signOut } from "@/app/actions/auth";
 import { createChannel } from "@/app/actions/channel";
 import { ChannelLink } from "@/components/channel-link";
 import { OpmlImport } from "@/components/opml-import";
+import { OpmlExport } from "@/components/opml-export";
 
 export async function Sidebar() {
   const supabase = await createClient();
@@ -46,8 +47,10 @@ export async function Sidebar() {
 
         {/* チャンネル作成フォーム */}
         <form action={createChannel} className="mt-2 px-1">
+          <label htmlFor="new-channel" className="sr-only">新しいチャンネル名</label>
           <div className="flex gap-1">
             <input
+              id="new-channel"
               type="text"
               name="name"
               placeholder="新しいチャンネル"
@@ -56,6 +59,7 @@ export async function Sidebar() {
             <button
               type="submit"
               className="rounded-full border-2 border-neon-pink bg-neon-pink px-3 py-1 text-sm font-bold text-white shadow-[2px_2px_0_var(--accent-cyan)] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0_var(--accent-cyan)]"
+              aria-label="チャンネルを作成"
             >
               +
             </button>
@@ -65,6 +69,7 @@ export async function Sidebar() {
         {/* OPML インポート */}
         <div className="px-1">
           <OpmlImport />
+          <OpmlExport />
         </div>
       </nav>
 
@@ -85,7 +90,7 @@ export async function Sidebar() {
             <button
               type="submit"
               className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-              title="ログアウト"
+              aria-label="ログアウト"
             >
               <LogOut size={18} />
             </button>

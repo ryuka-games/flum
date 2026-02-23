@@ -22,8 +22,10 @@ export function AddFeedForm({ channelId }: { channelId: string }) {
   return (
     <form action={action} className="flex flex-col gap-1">
       <input type="hidden" name="channel_id" value={channelId} />
+      <label htmlFor="feed-url" className="sr-only">RSS フィードの URL</label>
       <div className="flex gap-1">
         <input
+          id="feed-url"
           type="text"
           name="url"
           placeholder="RSS フィードの URL を入力"

@@ -5,6 +5,64 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { OpmlChannel } from "@/lib/opml";
 
+function escapeXml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+export async function exportOpml(): Promise<string> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data: channels } = await supabase
+    .from("channels")
+    .select("id, name")
+    .order("created_at", { ascending: true });
+
+  const { data: sources } = await supabase
+    .from("feed_sources")
+    .select("channel_id, name, url");
+
+  // チャンネルごとにフィードソースをグループ化
+  const sourcesByChannel = new Map<string, typeof sources>();
+  for (const source of sources ?? []) {
+    const list = sourcesByChannel.get(source.channel_id) ?? [];
+    list.push(source);
+    sourcesByChannel.set(source.channel_id, list);
+  }
+
+  const outlines = (channels ?? [])
+    .map((ch) => {
+      const feeds = sourcesByChannel.get(ch.id) ?? [];
+      if (feeds.length === 0) return "";
+      const feedOutlines = feeds
+        .map(
+          (f) =>
+            `      <outline text="${escapeXml(f.name)}" xmlUrl="${escapeXml(f.url)}" />`,
+        )
+        .join("\n");
+      return `    <outline text="${escapeXml(ch.name)}">\n${feedOutlines}\n    </outline>`;
+    })
+    .filter(Boolean)
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head>
+    <title>Flum Subscriptions</title>
+  </head>
+  <body>
+${outlines}
+  </body>
+</opml>`;
+}
+
 export type ImportResult = {
   channelsCreated: number;
   feedsAdded: number;

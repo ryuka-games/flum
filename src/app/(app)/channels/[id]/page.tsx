@@ -1,8 +1,8 @@
-import { Trash2 } from "lucide-react";
+import { Settings, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { deleteChannel } from "@/app/actions/channel";
-import { deleteFeedSource } from "@/app/actions/feed";
+import { DeleteFeedSourceButton } from "@/components/delete-feed-source";
 import { AddFeedForm } from "@/components/add-feed-form";
 import { Dropdown } from "@/components/dropdown";
 import { FeedPresets, PresetChips } from "@/components/feed-presets";
@@ -50,7 +50,8 @@ export default async function ChannelPage({
 
   return (
     <>
-      <div className="sticky top-0 z-40 bg-river-deep">
+      <div className="sticky top-0 z-40">
+        <div className="absolute inset-0 -z-10 bg-river-deep/80 backdrop-blur-md" />
         <header className="flex items-center justify-between px-4 py-3 pl-14 md:pl-4">
           <div>
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">
@@ -61,13 +62,27 @@ export default async function ChannelPage({
               <p className="text-xs text-[var(--text-muted)]">{channel.description}</p>
             )}
           </div>
-          <div className="flex items-center gap-3">
-            <Dropdown trigger={<span className="text-xl" title="ソース管理">+</span>}>
+          <div className="flex items-center gap-2">
+            {/* + ボタン: フィード追加のみ */}
+            <Dropdown trigger={<span className="text-xl" title="フィード追加">+</span>}>
               <AddFeedForm channelId={channel.id} />
               <PresetChips channelId={channel.id} existingUrls={existingUrls} />
-              {hasSources && (
-                <>
-                  <div className="mt-3">
+            </Dropdown>
+
+            {hasSources && (
+              <>
+                {/* ↻ リフレッシュ: 頻繁に使うのでヘッダー直置き */}
+                <RefreshButton channelId={channel.id} feedSourceIds={feedSourceIds} />
+
+                {/* ⚙ チャンネル設定 */}
+                <Dropdown
+                  trigger={
+                    <span title="チャンネル設定">
+                      <Settings size={18} />
+                    </span>
+                  }
+                >
+                  <div>
                     <p className="mb-1.5 text-xs text-[var(--text-muted)]">登録済み</p>
                     <div className="flex flex-wrap gap-2">
                       {sources.map((source) => (
@@ -76,38 +91,26 @@ export default async function ChannelPage({
                           className="flex items-center gap-1 rounded-full bg-river-surface px-2.5 py-1 text-xs text-[var(--text-secondary)]"
                         >
                           <span className="max-w-[160px] truncate">{source.name}</span>
-                          <form action={deleteFeedSource} className="inline">
-                            <input type="hidden" name="id" value={source.id} />
-                            <input type="hidden" name="channel_id" value={channel.id} />
-                            <button
-                              type="submit"
-                              className="text-[var(--text-muted)] hover:text-red-400"
-                              title="ソース削除"
-                            >
-                              ×
-                            </button>
-                          </form>
+                          <DeleteFeedSourceButton sourceId={source.id} channelId={channel.id} />
                         </div>
                       ))}
                     </div>
                   </div>
-                  <div className="mt-3">
-                    <RefreshButton channelId={channel.id} feedSourceIds={feedSourceIds} />
-                  </div>
-                </>
-              )}
-              <WallpaperPicker channelId={channel.id} />
-            </Dropdown>
-            <form action={deleteChannel}>
-              <input type="hidden" name="id" value={channel.id} />
-              <button
-                type="submit"
-                className="text-[var(--text-faded)] hover:text-red-400"
-                title="チャンネル削除"
-              >
-                <Trash2 size={20} />
-              </button>
-            </form>
+                  <WallpaperPicker channelId={channel.id} />
+                  <form action={deleteChannel} className="mt-3 border-t border-river-border pt-3">
+                    <input type="hidden" name="id" value={channel.id} />
+                    <button
+                      type="submit"
+                      className="flex w-full items-center gap-2 text-sm text-red-400 hover:text-red-300"
+                      title="チャンネル削除"
+                    >
+                      <Trash2 size={14} />
+                      チャンネルを削除
+                    </button>
+                  </form>
+                </Dropdown>
+              </>
+            )}
           </div>
         </header>
       </div>

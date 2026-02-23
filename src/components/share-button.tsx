@@ -10,8 +10,8 @@ export function ShareButtons({ title, url }: { title: string; url: string }) {
         href={xUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="rounded-lg px-1 text-[var(--text-faded)] hover:text-[var(--text-primary)]"
-        title="X に共有"
+        className="rounded-lg px-1 text-[var(--text-faded)] hover:text-int-accent"
+        aria-label="X に共有"
       >
         𝕏
       </a>
@@ -19,8 +19,8 @@ export function ShareButtons({ title, url }: { title: string; url: string }) {
         href={lineUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="rounded-lg px-1 text-[var(--text-faded)] hover:text-[var(--text-primary)]"
-        title="LINE に共有"
+        className="rounded-lg px-1 text-[var(--text-faded)] hover:text-int-accent"
+        aria-label="LINE に共有"
       >
         LINE
       </a>

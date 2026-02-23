@@ -131,6 +131,11 @@ export async function deleteFeedSource(formData: FormData) {
   if (!id) return;
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
   await supabase.from("feed_sources").delete().eq("id", id);
 
   revalidatePath(`/channels/${channelId}`);

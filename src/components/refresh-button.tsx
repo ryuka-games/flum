@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { RefreshCw } from "lucide-react";
 import { refreshChannelById } from "@/app/actions/feed";
 import { saveAndNotify } from "@/lib/feed/store";
 
@@ -14,10 +15,15 @@ export function RefreshButton({
   const [isPending, startTransition] = useTransition();
 
   function handleClick() {
+    window.dispatchEvent(new Event("flowline:start"));
     startTransition(async () => {
-      const fetched = await refreshChannelById(channelId).catch(() => []);
-      if (fetched.length > 0) {
-        await saveAndNotify(fetched, feedSourceIds);
+      try {
+        const fetched = await refreshChannelById(channelId).catch(() => []);
+        if (fetched.length > 0) {
+          await saveAndNotify(fetched, feedSourceIds);
+        }
+      } finally {
+        window.dispatchEvent(new Event("flowline:done"));
       }
     });
   }
@@ -27,9 +33,10 @@ export function RefreshButton({
       type="button"
       onClick={handleClick}
       disabled={isPending}
-      className="w-full rounded-xl border-2 border-river-border px-3 py-1.5 text-xs text-[var(--text-muted)] transition-colors hover:border-int-accent hover:text-int-accent disabled:opacity-50"
+      title="すべてのソースを更新"
+      className={`transition-colors ${isPending ? "text-int-accent" : "text-[var(--text-muted)] hover:text-int-accent"}`}
     >
-      {isPending ? "更新中..." : "↻ すべてのソースを更新"}
+      <RefreshCw size={18} className={isPending ? "animate-spin" : ""} />
     </button>
   );
 }

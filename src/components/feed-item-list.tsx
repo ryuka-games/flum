@@ -1,5 +1,8 @@
 import { FeedItem } from "@/components/feed-item";
 
+/** 入場アニメーション対象の先頭アイテム数（ファーストビュー分） */
+const ENTER_ANIM_COUNT = 6;
+
 type FeedItemData = {
   id: string;
   title: string;
@@ -40,8 +43,8 @@ export function FeedItemList({
   }
 
   return (
-    <div className="mx-auto max-w-xl divide-y divide-river-border/50 bg-[var(--glass-bg)] backdrop-blur-md">
-      {items.map((item) => (
+    <div className="mx-auto w-full max-w-xl divide-y divide-river-border/50 bg-[linear-gradient(to_bottom,transparent,var(--glass-bg)_120px)] backdrop-blur-md">
+      {items.map((item, i) => (
         <FeedItem
           key={item.id}
           title={item.title}
@@ -50,12 +53,14 @@ export function FeedItemList({
           publishedAt={item.published_at}
           fetchedAt={item.fetchedAt}
           channelName={channelName}
+          hideChannelLabel
           returnPath={returnPath}
           isFavorited={favoritedUrls.includes(item.url)}
           ogImage={item.og_image ?? undefined}
           ogDescription={item.og_description ?? undefined}
           thumbnailUrl={item.thumbnail_url ?? undefined}
           content={item.content ?? undefined}
+          enterIndex={i < ENTER_ANIM_COUNT ? i : undefined}
         />
       ))}
     </div>

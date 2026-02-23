@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, X, PanelLeftClose } from "lucide-react";
 import { FlowLine } from "@/components/flow-line";
 import { WallpaperLayer } from "@/components/wallpaper-layer";
 
@@ -34,10 +34,22 @@ export function AppShell({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
 
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+
   // ページ遷移でドロワーを閉じる
   useEffect(() => {
-    setDrawerOpen(false);
-  }, [pathname]);
+    closeDrawer();
+  }, [pathname, closeDrawer]);
+
+  // Escape キーでドロワーを閉じる
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeDrawer();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [drawerOpen, closeDrawer]);
 
   const toggle = () => {
     localStorage.setItem(STORAGE_KEY, String(!collapsed));
@@ -63,6 +75,7 @@ export function AppShell({
                 onClick={toggle}
                 className="rounded-lg p-1 text-[var(--text-secondary)] hover:bg-river-surface hover:text-white"
                 title="サイドバーを表示"
+                aria-label="サイドバーを表示"
               >
                 <Menu size={18} />
               </button>
@@ -84,13 +97,22 @@ export function AppShell({
               ${collapsed ? "md:hidden" : ""}
             `}
           >
-            {/* デスクトップ折りたたみボタン（モバイルでは非表示） */}
+            {/* モバイル: 閉じるボタン */}
+            <button
+              onClick={closeDrawer}
+              className="absolute right-2 top-3 z-10 rounded-lg p-1 text-[var(--text-secondary)] hover:bg-river-surface hover:text-white md:hidden"
+              aria-label="メニューを閉じる"
+            >
+              <X size={18} />
+            </button>
+            {/* デスクトップ: 折りたたみボタン */}
             <button
               onClick={toggle}
               className="absolute right-2 top-3 z-10 hidden rounded-lg p-1 text-[var(--text-secondary)] hover:bg-river-surface hover:text-white md:block"
               title="サイドバーを非表示"
+              aria-label="サイドバーを非表示"
             >
-              ←
+              <PanelLeftClose size={18} />
             </button>
             {sidebar}
           </div>
@@ -99,20 +121,23 @@ export function AppShell({
         {/* モバイルバックドロップ */}
         {drawerOpen && (
           <div
-            className="md:hidden fixed inset-0 z-40 bg-black/60"
-            onClick={() => setDrawerOpen(false)}
+            className="fixed inset-0 z-40 bg-black/60 md:hidden"
+            onClick={closeDrawer}
+            aria-hidden="true"
           />
         )}
 
         <main className="flex flex-1 flex-col min-w-0">
-          {/* モバイルハンバーガー */}
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="md:hidden fixed top-3 left-3 z-30 rounded-xl bg-river-deep/80 p-2 text-[var(--text-secondary)] backdrop-blur-sm hover:text-white"
-            title="メニューを開く"
-          >
-            <Menu size={20} />
-          </button>
+          {/* モバイルハンバーガー（ドロワー開いている時は非表示） */}
+          {!drawerOpen && (
+            <button
+              onClick={() => setDrawerOpen(true)}
+              className="fixed left-3 top-3 z-30 rounded-xl bg-river-deep/80 p-2 text-[var(--text-secondary)] backdrop-blur-sm hover:text-white md:hidden"
+              aria-label="メニューを開く"
+            >
+              <Menu size={20} />
+            </button>
+          )}
           <WallpaperLayer sidebarWidth={sidebarWidth} />
           <div className="relative z-10 flex flex-1 flex-col">
             {children}

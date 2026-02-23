@@ -75,6 +75,18 @@ export function FlowLine() {
     return () => document.removeEventListener("click", handleClick, true);
   }, []);
 
+  // 外部トリガー: カスタムイベントで start/done を受け付ける
+  useEffect(() => {
+    const onStart = () => startRef.current();
+    const onDone = () => doneRef.current();
+    window.addEventListener("flowline:start", onStart);
+    window.addEventListener("flowline:done", onDone);
+    return () => {
+      window.removeEventListener("flowline:start", onStart);
+      window.removeEventListener("flowline:done", onDone);
+    };
+  }, []);
+
   // ナビゲーション完了: pathname 変化を検知
   useEffect(() => {
     if (pathname !== prevPathRef.current) {

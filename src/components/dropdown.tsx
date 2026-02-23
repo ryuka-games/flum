@@ -27,7 +27,7 @@ export function Dropdown({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+        className="cursor-pointer text-[var(--text-muted)] hover:text-int-accent"
       >
         {trigger}
       </button>

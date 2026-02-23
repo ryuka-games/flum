@@ -80,7 +80,7 @@ export default async function ScoopsPage({
 
       <div>
         {favorites && favorites.length > 0 ? (
-          <div className="mx-auto max-w-xl divide-y divide-river-border/50 bg-black/95 backdrop-blur-md">
+          <div className="mx-auto w-full max-w-xl divide-y divide-river-border/50 bg-[var(--glass-bg)] backdrop-blur-md">
             {favorites.map((fav) => (
               <FeedItem
                 key={fav.id}

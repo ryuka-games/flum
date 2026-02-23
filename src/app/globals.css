@@ -87,19 +87,60 @@ aside {
 
 /* 色を失う方向: ゆっくり（ページ表示時） */
 [data-decay="true"] {
+  opacity: var(--decay-opacity, 1);
   transition: filter 1.2s ease-out, opacity 1.2s ease-out;
 }
 
-/* ホバー: 瞬時復帰（0.08s）= Splatoon の「色が戻る」快感 */
-[data-decay="true"]:hover {
+/* ホバー / タップ: 瞬時復帰（0.08s）= Splatoon の「色が戻る」快感
+   :hover はデスクトップ、:active はモバイルタップ */
+[data-decay="true"]:hover,
+[data-decay="true"]:active {
   filter: none !important;
   opacity: 1 !important;
   transition: filter 0.08s ease-out, opacity 0.08s ease-out;
 }
 
+/* モバイル: ホバーなし端末では filter 無効・opacity のみで鮮度表現 */
+@media (hover: none) {
+  [data-decay="true"] {
+    filter: none !important;
+    opacity: max(var(--decay-opacity, 1), 0.6);
+  }
+}
+
+/* --- フィードカード入場アニメーション ---
+   日本アニメ式「ポンッ」: 浮上 → オーバーシュート → 着地 + ソフトグロー
+   参考: ドーナドーナのポップ感 + 日本ソシャゲの「出た！」演出
+   原則: かわいい = 小振り・短尺・1回バウンス（グリッチやclip-pathは西洋的なので不使用） */
+
+[data-card-enter] {
+  --pop-duration: 0.35s;
+  --pop-stagger: 120ms;
+  --pop-glow: rgba(255, 59, 154, 0.25);
+
+  animation: card-pop var(--pop-duration) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation-delay: var(--enter-delay, 0ms);
+}
+
+/* fresh + 入場: pop → pulse を直列で再生（animation 競合を回避）
+   delay = 入場遅延 + pop 所要時間。pop が終わってから pulse が始まる。 */
+[data-card-enter][data-freshness="fresh"] {
+  animation:
+    card-pop var(--pop-duration) cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    fresh-pulse 1.5s ease-in-out calc(var(--enter-delay, 0ms) + var(--pop-duration)) 2;
+}
+
+@keyframes card-pop {
+  0%   { opacity: 0; transform: scale(0.92) translateY(8px); }
+  50%  { opacity: 1; transform: scale(1.03) translateY(-2px); box-shadow: 0 0 12px 2px var(--pop-glow); }
+  75%  { transform: scale(0.998); box-shadow: 0 0 0 0 transparent; }
+  100% { opacity: 1; transform: none; box-shadow: none; }
+}
+
 /* --- fresh パルス（Hi-Fi Rush 式: パルス = 生きてる感） ---
-   < 1時間の記事だけ、ピンクの光が2回パルス。「さっき届いたよ」のシグナル */
-[data-freshness="fresh"] {
+   < 1時間の記事だけ、ピンクの光が2回パルス。「さっき届いたよ」のシグナル
+   入場アニメーションなしの場合はこちらが適用される */
+[data-freshness="fresh"]:not([data-card-enter]) {
   animation: fresh-pulse 1.5s ease-in-out 2;
 }
 
@@ -134,7 +175,8 @@ aside {
 /* アクセシビリティ: 動き抑制設定 */
 @media (prefers-reduced-motion: reduce) {
   .glitch-text,
-  [data-freshness="fresh"] {
+  [data-freshness="fresh"],
+  [data-card-enter] {
     animation: none !important;
   }
 }
