@@ -111,7 +111,6 @@ body {
 [data-card-enter] {
   --pop-duration: 0.35s;
   --pop-stagger: 120ms;
-  --pop-glow: rgba(255, 59, 154, 0.25);
 
   animation: card-pop var(--pop-duration) cubic-bezier(0.34, 1.56, 0.64, 1) both;
   animation-delay: var(--enter-delay, 0ms);
@@ -127,9 +126,9 @@ body {
 
 @keyframes card-pop {
   0%   { opacity: 0; transform: scale(0.92) translateY(8px); }
-  50%  { opacity: 1; transform: scale(1.03) translateY(-2px); box-shadow: 0 0 12px 2px var(--pop-glow); }
-  75%  { transform: scale(0.998); box-shadow: 0 0 0 0 transparent; }
-  100% { opacity: 1; transform: none; box-shadow: none; }
+  50%  { opacity: 1; transform: scale(1.03) translateY(-2px); }
+  75%  { transform: scale(0.998); }
+  100% { opacity: 1; transform: none; }
 }
 
 /* --- fresh パルス（Hi-Fi Rush 式: パルス = 生きてる感） ---
