@@ -75,22 +75,6 @@ body {
 }
 
 
-/* --- SidePanel 配置 ---
-   モバイル: ボトムシート
-   デスクトップ: コンテンツ(640px)右横に浮遊 */
-.side-panel {
-  inset: auto 12px 12px 12px;
-  max-height: 70vh;
-}
-@media (min-width: 768px) {
-  .side-panel {
-    inset: 80px auto auto auto;
-    left: min(calc(50% + 336px), calc(100vw - 344px));
-    width: 320px;
-    max-height: calc(100vh - 160px);
-  }
-}
-
 /* --- カラードレイン ---
    Splatoon: 彩度剥奪 = 弱体化
    Persona 5: 彩度 + 色温度シフト = 状態変化

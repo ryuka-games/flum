@@ -62,18 +62,14 @@ export function SidePanel({
       />
 
       {/* パネル本体
-          モバイル: fixed bottom sheet (inset-x-3 bottom-3)
-          デスクトップ: コンテンツ右端 + 16px gap に配置
-            left: min(
-              calc(50% + 336px),       ← コンテンツ右端(50%+320px) + 16px gap
-              calc(100vw - 344px)      ← 画面右端から panel(320px) + 24px margin
-            )
+          モバイル: fixed ボトムシート (inset-x-3 bottom-3)
+          デスクトップ: 右上に浮遊 (md:top-20 md:right-6)
       */}
       <div
         ref={panelRef}
         role="dialog"
         aria-label={title}
-        className="side-panel fixed z-50 overflow-y-auto rounded-2xl border-2 border-neon-pink bg-river-deep p-4 shadow-[4px_4px_0_var(--accent-cyan)]"
+        className="fixed z-50 overflow-y-auto rounded-2xl border-2 border-neon-pink bg-river-deep p-4 shadow-[4px_4px_0_var(--accent-cyan)] inset-x-3 bottom-3 max-h-[70vh] md:inset-auto md:top-20 md:right-6 md:w-80 md:max-h-[calc(100vh-160px)]"
       >
         {/* ヘッダー */}
         <div className="mb-3 flex items-center justify-between">
