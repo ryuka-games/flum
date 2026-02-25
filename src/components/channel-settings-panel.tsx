@@ -1,0 +1,104 @@
+"use client";
+
+import { useState } from "react";
+import { Settings, Trash2 } from "lucide-react";
+import { deleteChannel } from "@/app/actions/channel";
+import { AddFeedForm } from "@/components/add-feed-form";
+import { PresetChips } from "@/components/feed-presets";
+import { DeleteFeedSourceButton } from "@/components/delete-feed-source";
+import { WallpaperPicker } from "@/components/wallpaper-picker";
+import { SidePanel } from "@/components/side-panel";
+
+/* ─────────────────────────────────────────────
+   ChannelSettingsPanel — ⚙ ボタン + 右ガターパネル
+   フィード追加 / ソース管理 / 壁紙 / チャンネル削除
+   ───────────────────────────────────────────── */
+
+export function ChannelSettingsPanel({
+  channelId,
+  channelName,
+  sources,
+  existingUrls,
+}: {
+  channelId: string;
+  channelName: string;
+  sources: { id: string; name: string; url: string }[];
+  existingUrls: string[];
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      {/* トリガー: ⚙ ボタン */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="cursor-pointer text-[var(--text-muted)] hover:text-int-accent"
+        title="チャンネル設定"
+        aria-label="チャンネル設定"
+      >
+        <Settings size={18} />
+      </button>
+
+      <SidePanel
+        open={open}
+        onClose={() => setOpen(false)}
+        title={`# ${channelName}`}
+      >
+        {/* フィード追加 */}
+        <section className="mb-4">
+          <p className="mb-1.5 text-xs font-medium text-[var(--text-muted)]">
+            フィード追加
+          </p>
+          <AddFeedForm channelId={channelId} />
+          <div className="mt-2">
+            <PresetChips channelId={channelId} existingUrls={existingUrls} />
+          </div>
+        </section>
+
+        {/* 登録済みソース */}
+        {sources.length > 0 && (
+          <section className="mb-4">
+            <p className="mb-1.5 text-xs font-medium text-[var(--text-muted)]">
+              登録済みソース
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {sources.map((source) => (
+                <div
+                  key={source.id}
+                  className="flex items-center gap-1 rounded-full bg-river-surface px-2.5 py-1 text-xs text-[var(--text-secondary)]"
+                >
+                  <span className="max-w-[160px] truncate">{source.name}</span>
+                  <DeleteFeedSourceButton
+                    sourceId={source.id}
+                    channelId={channelId}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* 壁紙 */}
+        <section className="mb-4">
+          <WallpaperPicker channelId={channelId} />
+        </section>
+
+        {/* チャンネル削除 */}
+        <form
+          action={deleteChannel}
+          className="border-t border-river-border pt-3"
+        >
+          <input type="hidden" name="id" value={channelId} />
+          <button
+            type="submit"
+            className="flex w-full items-center gap-2 text-sm text-red-400 hover:text-red-300"
+            title="チャンネル削除"
+          >
+            <Trash2 size={14} />
+            チャンネルを削除
+          </button>
+        </form>
+      </SidePanel>
+    </>
+  );
+}
