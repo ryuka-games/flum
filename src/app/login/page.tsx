@@ -51,7 +51,7 @@ export default function LoginPage() {
               </div>
               <div>
                 <p className="text-sm font-medium text-[var(--text-primary)]">{f.title}</p>
-                <p className="text-xs leading-relaxed text-[var(--text-muted)]">{f.desc}</p>
+                <p className="text-xs leading-relaxed text-[var(--text-secondary)]">{f.desc}</p>
               </div>
             </div>
           ))}
@@ -66,7 +66,7 @@ export default function LoginPage() {
           GitHub でログイン
         </button>
 
-        <p className="mt-4 text-xs text-[var(--text-faded)]">
+        <p className="mt-4 text-xs text-[var(--text-secondary)]">
           無料 / GitHub アカウントで即開始
         </p>
       </div>

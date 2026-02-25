@@ -76,7 +76,7 @@ export function OpmlImport() {
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
-          className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-1.5 text-xs text-[var(--text-muted)] hover:bg-river-surface hover:text-[var(--text-primary)]"
+          className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:bg-river-surface hover:text-[var(--text-primary)]"
         >
           <Upload size={12} />
           OPML インポート
@@ -117,7 +117,7 @@ export function OpmlImport() {
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="rounded-full px-3 py-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                  className="rounded-full px-3 py-1 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
                 >
                   キャンセル
                 </button>
@@ -160,7 +160,7 @@ export function OpmlImport() {
               <button
                 type="button"
                 onClick={handleClose}
-                className="rounded-full px-3 py-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                className="rounded-full px-3 py-1 text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               >
                 閉じる
               </button>

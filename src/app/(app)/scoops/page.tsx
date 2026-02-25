@@ -54,7 +54,7 @@ export default async function ScoopsPage({
               className={`rounded-full border-2 px-3 py-0.5 text-xs transition-colors ${
                 !filterChannel
                   ? "border-neon-pink bg-neon-pink font-bold text-white shadow-[2px_2px_0_var(--accent-cyan)]"
-                  : "border-river-border bg-river-surface text-[var(--text-muted)] hover:border-neon-pink hover:text-[var(--text-primary)]"
+                  : "border-river-border bg-river-surface text-[var(--text-secondary)] hover:border-neon-pink hover:text-[var(--text-primary)]"
               }`}
             >
               すべて
@@ -66,7 +66,7 @@ export default async function ScoopsPage({
                 className={`rounded-full border-2 px-3 py-0.5 text-xs transition-colors ${
                   filterChannel === name
                     ? "border-neon-pink bg-neon-pink font-bold text-white shadow-[2px_2px_0_var(--accent-cyan)]"
-                    : "border-river-border bg-river-surface text-[var(--text-muted)] hover:border-neon-pink hover:text-[var(--text-primary)]"
+                    : "border-river-border bg-river-surface text-[var(--text-secondary)] hover:border-neon-pink hover:text-[var(--text-primary)]"
                 }`}
               >
                 # {name}
@@ -96,10 +96,10 @@ export default async function ScoopsPage({
             ))}
           </div>
         ) : (
-          <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-muted)]">
+          <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-secondary)]">
             <div className="text-center">
               <p className="mb-2">Scoop した記事はまだありません</p>
-              <p className="text-sm text-[var(--text-faded)]">
+              <p className="text-sm text-[var(--text-secondary)]">
                 フィードの <Pin size={14} className="inline text-neon-pink" /> をクリックして流れから掬い上げましょう
               </p>
             </div>

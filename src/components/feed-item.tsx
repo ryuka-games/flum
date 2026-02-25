@@ -163,7 +163,7 @@ export function FeedItem({
           {domain && (
             <>
               <span>·</span>
-              <span className="flex-shrink-0 text-[var(--text-muted)]">{domain}</span>
+              <span className="flex-shrink-0 text-[var(--text-secondary)]">{domain}</span>
             </>
           )}
           {publishedAt ? (
@@ -174,7 +174,7 @@ export function FeedItem({
           ) : fetchedAt ? (
             <>
               <span>·</span>
-              <span className="flex-shrink-0 italic text-[var(--text-faded)]" title="取得日時（公開日不明）">
+              <span className="flex-shrink-0 italic text-[var(--text-secondary)]" title="取得日時（公開日不明）">
                 {timeAgo(new Date(fetchedAt).toISOString(), now)}
               </span>
             </>
@@ -201,7 +201,7 @@ export function FeedItem({
         )}
 
         {/* アクション行（下） */}
-        <div className="mt-3 flex items-center gap-2 text-xs text-[var(--text-muted)]">
+        <div className="mt-3 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
           {channelName && !hideChannelLabel && <span className="truncate"># {channelName}</span>}
           <span className="ml-auto flex flex-shrink-0 items-center gap-1.5">
             <span className="pointer-events-auto opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
@@ -236,7 +236,7 @@ export function FeedItem({
                 <input type="hidden" name="og_description" value={ogDescription ?? ""} />
                 <button
                   type="submit"
-                  className={`cursor-pointer ${isFavorited ? "text-neon-pink" : "text-[var(--text-faded)] hover:text-neon-pink"}`}
+                  className={`cursor-pointer ${isFavorited ? "text-neon-pink" : "text-[var(--text-muted)] hover:text-neon-pink"}`}
                   aria-label={isFavorited ? "Scoop 解除" : "Scoop"}
                 >
                   <Pin size={14} fill={isFavorited ? "currentColor" : "none"} />

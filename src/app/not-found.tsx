@@ -9,7 +9,7 @@ export default function NotFound() {
       <p className="mt-3 text-lg text-[var(--text-primary)]">
         ページが見つかりません
       </p>
-      <p className="mt-1 text-sm text-[var(--text-muted)]">
+      <p className="mt-1 text-sm text-[var(--text-secondary)]">
         この水路は存在しないか、流れが変わったようです
       </p>
       <Link

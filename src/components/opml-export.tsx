@@ -28,7 +28,7 @@ export function OpmlExport() {
       type="button"
       onClick={handleExport}
       disabled={exporting}
-      className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-1.5 text-xs text-[var(--text-muted)] hover:bg-river-surface hover:text-[var(--text-primary)] disabled:opacity-50"
+      className="mt-1 flex w-full items-center gap-2 rounded-xl px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:bg-river-surface hover:text-[var(--text-primary)] disabled:opacity-50"
     >
       <Download size={12} />
       {exporting ? "エクスポート中..." : "OPML エクスポート"}

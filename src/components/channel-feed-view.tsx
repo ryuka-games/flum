@@ -104,7 +104,7 @@ export function ChannelFeedView({
 
   if (isRefreshing && feedItems.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-muted)]">
+      <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-secondary)]">
         <p>読み込み中...</p>
       </div>
     );

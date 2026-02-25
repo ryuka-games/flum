@@ -31,10 +31,10 @@ export function FeedItemList({
 }) {
   if (items.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-muted)]">
+      <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-secondary)]">
         <div className="text-center">
           <p className="mb-2">フィードはまだありません</p>
-          <p className="text-sm text-[var(--text-faded)]">
+          <p className="text-sm text-[var(--text-secondary)]">
             RSS ソースを追加するとここにフィードが表示されます
           </p>
         </div>

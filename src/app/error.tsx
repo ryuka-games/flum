@@ -15,7 +15,7 @@ export default function GlobalError({
       <p className="mt-3 text-lg text-[var(--text-primary)]">
         問題が発生しました
       </p>
-      <p className="mt-1 max-w-md text-sm text-[var(--text-muted)]">
+      <p className="mt-1 max-w-md text-sm text-[var(--text-secondary)]">
         {error.message || "予期しないエラーが発生しました"}
       </p>
       <div className="mt-6 flex gap-3">

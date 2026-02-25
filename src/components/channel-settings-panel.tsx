@@ -48,7 +48,7 @@ export function ChannelSettingsPanel({
       >
         {/* フィード追加 */}
         <section className="mb-4">
-          <p className="mb-1.5 text-xs font-medium text-[var(--text-muted)]">
+          <p className="mb-1.5 text-xs font-medium text-[var(--text-secondary)]">
             フィード追加
           </p>
           <AddFeedForm channelId={channelId} />
@@ -60,7 +60,7 @@ export function ChannelSettingsPanel({
         {/* 登録済みソース */}
         {sources.length > 0 && (
           <section className="mb-4">
-            <p className="mb-1.5 text-xs font-medium text-[var(--text-muted)]">
+            <p className="mb-1.5 text-xs font-medium text-[var(--text-secondary)]">
               登録済みソース
             </p>
             <div className="flex flex-wrap gap-2">
