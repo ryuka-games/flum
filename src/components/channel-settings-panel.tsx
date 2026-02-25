@@ -93,13 +93,15 @@ export function ChannelSettingsPanel({
           className="border-t border-river-border pt-3"
         >
           <input type="hidden" name="id" value={channelId} />
-          <button
-            type="submit"
-            className="flex w-full items-center gap-2 text-sm text-int-danger hover:brightness-110"
-          >
-            <Trash2 size={14} />
-            チャンネルを削除
-          </button>
+          <Tooltip content="チャンネルを削除">
+            <button
+              type="submit"
+              className="text-int-danger hover:brightness-110"
+              aria-label="チャンネルを削除"
+            >
+              <Trash2 size={16} />
+            </button>
+          </Tooltip>
         </form>
       </SidePanel>
     </>

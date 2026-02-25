@@ -145,8 +145,7 @@ function PresetButton({
     ? "rounded-full px-2.5 py-0.5 text-xs"
     : "rounded-xl px-3 py-1.5 text-sm";
 
-  return (
-    <Tooltip content={error ?? preset.url}>
+  const btn = (
       <button
         onClick={handleClick}
         disabled={disabled}
@@ -161,6 +160,11 @@ function PresetButton({
         {added ? "✓" : isPending ? "…" : "+"}{" "}
         {preset.name}
       </button>
-    </Tooltip>
   );
+
+  // エラー時のみツールチップでエラー内容を表示
+  if (error) {
+    return <Tooltip content={error}>{btn}</Tooltip>;
+  }
+  return btn;
 }
