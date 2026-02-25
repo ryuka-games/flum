@@ -4,6 +4,7 @@ import { useTransition } from "react";
 import { RefreshCw } from "lucide-react";
 import { refreshChannelById } from "@/app/actions/feed";
 import { saveAndNotify } from "@/lib/feed/store";
+import { Tooltip } from "@/components/tooltip";
 
 export function RefreshButton({
   channelId,
@@ -29,14 +30,16 @@ export function RefreshButton({
   }
 
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={isPending}
-      title="すべてのソースを更新"
-      className={`transition-colors ${isPending ? "text-int-accent" : "text-[var(--text-muted)] hover:text-int-accent"}`}
-    >
-      <RefreshCw size={18} className={isPending ? "animate-spin" : ""} />
-    </button>
+    <Tooltip content="すべてのソースを更新">
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={isPending}
+        className={`transition-colors ${isPending ? "text-int-accent" : "text-[var(--text-muted)] hover:text-int-accent"}`}
+        aria-label="すべてのソースを更新"
+      >
+        <RefreshCw size={18} className={isPending ? "animate-spin" : ""} />
+      </button>
+    </Tooltip>
   );
 }

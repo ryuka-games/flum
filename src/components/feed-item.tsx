@@ -174,7 +174,7 @@ export function FeedItem({
           ) : fetchedAt ? (
             <>
               <span>·</span>
-              <span className="flex-shrink-0 italic text-[var(--text-secondary)]" title="取得日時（公開日不明）">
+              <span className="flex-shrink-0 italic text-[var(--text-secondary)]">
                 {timeAgo(new Date(fetchedAt).toISOString(), now)}
               </span>
             </>

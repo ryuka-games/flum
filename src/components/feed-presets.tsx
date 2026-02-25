@@ -5,6 +5,7 @@ import { addFeedSource } from "@/app/actions/feed";
 import { putItems } from "@/lib/feed/store";
 import { FEED_PRESETS, type FeedPreset } from "@/lib/feed/presets";
 import { AddFeedForm } from "./add-feed-form";
+import { Tooltip } from "@/components/tooltip";
 
 /** プリセットをカテゴリごとにグループ化 */
 function groupByCategory(
@@ -145,20 +146,21 @@ function PresetButton({
     : "rounded-xl px-3 py-1.5 text-sm";
 
   return (
-    <button
-      onClick={handleClick}
-      disabled={disabled}
-      title={error ?? preset.url}
-      className={`${baseStyle} transition-colors ${
-        added
-          ? "bg-river-surface text-[var(--text-muted)]"
-          : error
-            ? "bg-int-danger/20 text-int-danger"
-            : "bg-river-surface text-[var(--text-secondary)] hover:bg-river-border hover:text-[var(--text-primary)]"
-      } disabled:cursor-default`}
-    >
-      {added ? "✓" : isPending ? "…" : "+"}{" "}
-      {preset.name}
-    </button>
+    <Tooltip content={error ?? preset.url}>
+      <button
+        onClick={handleClick}
+        disabled={disabled}
+        className={`${baseStyle} transition-colors ${
+          added
+            ? "bg-river-surface text-[var(--text-muted)]"
+            : error
+              ? "bg-int-danger/20 text-int-danger"
+              : "bg-river-surface text-[var(--text-secondary)] hover:bg-river-border hover:text-[var(--text-primary)]"
+        } disabled:cursor-default`}
+      >
+        {added ? "✓" : isPending ? "…" : "+"}{" "}
+        {preset.name}
+      </button>
+    </Tooltip>
   );
 }

@@ -166,12 +166,34 @@ body {
   32% { text-shadow: none; transform: none; }
 }
 
+/* --- ツールチップ入場（ポンッ: card-pop のミニ版） ---
+   ドーナドーナ準拠: scale overshoot で「浮き上がる」感
+   パネルの出現と同じ spring 曲線、短尺・小振り */
+.tooltip-pop {
+  animation: tooltip-pop 200ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes tooltip-pop {
+  0%   { opacity: 0; transform: scale(0.9); }
+  50%  { opacity: 1; transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* タッチデバイス: ツールチップ非表示（tap = action、tooltip は邪魔） */
+@media (hover: none) {
+  .tooltip-pop { display: none; }
+}
+
 /* アクセシビリティ: 動き抑制設定 */
 @media (prefers-reduced-motion: reduce) {
   .glitch-text,
   [data-freshness="fresh"],
   [data-card-enter] {
     animation: none !important;
+  }
+  .tooltip-pop {
+    animation: none !important;
+    opacity: 1;
   }
 }
 

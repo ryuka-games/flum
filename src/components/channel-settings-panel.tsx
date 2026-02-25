@@ -8,6 +8,7 @@ import { PresetChips } from "@/components/feed-presets";
 import { DeleteFeedSourceButton } from "@/components/delete-feed-source";
 import { WallpaperPicker } from "@/components/wallpaper-picker";
 import { SidePanel } from "@/components/side-panel";
+import { Tooltip } from "@/components/tooltip";
 
 /* ─────────────────────────────────────────────
    ChannelSettingsPanel — ⚙ ボタン + 右ガターパネル
@@ -32,14 +33,15 @@ export function ChannelSettingsPanel({
       {/* トリガー: ⚙ ボタン — アバターの左隣に fixed 配置
           デスクトップ: right-[72px] top-6（avatar は right-6 top-6, w-10）
           モバイル: left-[60px]（avatar は left-3, w-10）*/}
-      <button
-        onClick={() => setOpen(!open)}
-        className="fixed right-[64px] top-6 z-50 flex h-8 w-8 items-center justify-center rounded-full bg-river-deep/85 text-[var(--text-secondary)] ring-1 ring-white/[0.06] backdrop-blur-md transition-all hover:bg-river-surface/90 hover:text-int-accent hover:ring-white/[0.10] max-md:left-[52px] max-md:right-auto max-md:top-[calc(12px+env(safe-area-inset-top,0px))]"
-        title="チャンネル設定"
-        aria-label="チャンネル設定"
-      >
-        <Settings size={18} />
-      </button>
+      <Tooltip content="チャンネル設定" placement="bottom">
+        <button
+          onClick={() => setOpen(!open)}
+          className="fixed right-[64px] top-6 z-50 flex h-8 w-8 items-center justify-center rounded-full bg-river-deep/85 text-[var(--text-secondary)] ring-1 ring-white/[0.06] backdrop-blur-md transition-all hover:bg-river-surface/90 hover:text-int-accent hover:ring-white/[0.10] max-md:left-[52px] max-md:right-auto max-md:top-[calc(12px+env(safe-area-inset-top,0px))]"
+          aria-label="チャンネル設定"
+        >
+          <Settings size={18} />
+        </button>
+      </Tooltip>
 
       <SidePanel
         open={open}
@@ -94,7 +96,6 @@ export function ChannelSettingsPanel({
           <button
             type="submit"
             className="flex w-full items-center gap-2 text-sm text-int-danger hover:brightness-110"
-            title="チャンネル削除"
           >
             <Trash2 size={14} />
             チャンネルを削除

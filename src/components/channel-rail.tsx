@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Pin } from "lucide-react";
 import { createChannel } from "@/app/actions/channel";
+import { Tooltip } from "@/components/tooltip";
 
 /* ─────────────────────────────────────────────
    ChannelRailItem — アクティブ状態判定の薄い Client ラッパー
@@ -24,18 +25,19 @@ function ChannelRailItem({
   const initial = label.charAt(0).toUpperCase();
 
   return (
-    <Link
-      href={href}
-      aria-current={isActive ? "page" : undefined}
-      className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold transition-all ${
-        isActive
-          ? "border-2 border-neon-pink bg-neon-pink/20 text-white shadow-[2px_2px_0_var(--accent-cyan)]"
-          : "bg-river-deep/85 text-[var(--text-secondary)] ring-1 ring-white/[0.06] backdrop-blur-md hover:bg-river-surface/90 hover:text-[var(--text-primary)] hover:ring-white/[0.10]"
-      }`}
-      title={label}
-    >
-      {icon ?? initial}
-    </Link>
+    <Tooltip content={label} placement="right">
+      <Link
+        href={href}
+        aria-current={isActive ? "page" : undefined}
+        className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold transition-all ${
+          isActive
+            ? "border-2 border-neon-pink bg-neon-pink/20 text-white shadow-[2px_2px_0_var(--accent-cyan)]"
+            : "bg-river-deep/85 text-[var(--text-secondary)] ring-1 ring-white/[0.06] backdrop-blur-md hover:bg-river-surface/90 hover:text-[var(--text-primary)] hover:ring-white/[0.10]"
+        }`}
+      >
+        {icon ?? initial}
+      </Link>
+    </Tooltip>
   );
 }
 
@@ -69,18 +71,19 @@ function CreateChannelButton() {
 
   return (
     <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className={`flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold transition-all ${
-          open
-            ? "border-2 border-neon-pink bg-neon-pink/20 text-white"
-            : "bg-river-deep/85 text-[var(--text-secondary)] ring-1 ring-white/[0.06] backdrop-blur-md hover:bg-river-surface/90 hover:text-int-accent hover:ring-white/[0.10]"
-        }`}
-        title="チャンネルを作成"
-        aria-label="チャンネルを作成"
-      >
-        +
-      </button>
+      <Tooltip content="チャンネルを作成" placement="right">
+        <button
+          onClick={() => setOpen(!open)}
+          className={`flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold transition-all ${
+            open
+              ? "border-2 border-neon-pink bg-neon-pink/20 text-white"
+              : "bg-river-deep/85 text-[var(--text-secondary)] ring-1 ring-white/[0.06] backdrop-blur-md hover:bg-river-surface/90 hover:text-int-accent hover:ring-white/[0.10]"
+          }`}
+          aria-label="チャンネルを作成"
+        >
+          +
+        </button>
+      </Tooltip>
       {open && (
         <div className="absolute left-full top-0 z-30 ml-3 w-56 rounded-2xl border-2 border-neon-pink bg-river-deep p-3 shadow-[4px_4px_0_var(--accent-cyan)]">
           <form action={handleSubmit}>
