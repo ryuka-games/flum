@@ -45,29 +45,27 @@ export default async function ChannelPage({
 
   return (
     <>
+      {/* ⚙ チャンネル設定 — アバター隣に fixed 配置 */}
+      <ChannelSettingsPanel
+        channelId={channel.id}
+        channelName={channel.name}
+        sources={sources ?? []}
+        existingUrls={existingUrls}
+      />
+
       <section className="px-4 py-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-              <span className="mr-1 text-[var(--text-muted)]">#</span>
-              {channel.name}
-            </h2>
-            {channel.description && (
-              <p className="text-xs text-[var(--text-muted)]">{channel.description}</p>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
-            {hasSources && (
-              <RefreshButton channelId={channel.id} feedSourceIds={feedSourceIds} />
-            )}
-            <ChannelSettingsPanel
-              channelId={channel.id}
-              channelName={channel.name}
-              sources={sources ?? []}
-              existingUrls={existingUrls}
-            />
-          </div>
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+            <span className="mr-1 text-[var(--text-muted)]">#</span>
+            {channel.name}
+          </h2>
+          {hasSources && (
+            <RefreshButton channelId={channel.id} feedSourceIds={feedSourceIds} />
+          )}
         </div>
+        {channel.description && (
+          <p className="mt-1 text-xs text-[var(--text-muted)]">{channel.description}</p>
+        )}
       </section>
 
       {hasSources ? (
