@@ -96,7 +96,7 @@ export function Tooltip({
             role="tooltip"
             style={floatingStyles}
             {...getFloatingProps()}
-            className="tooltip-pop z-50 max-w-[200px] rounded-xl border-2 border-neon-pink bg-river-deep px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] shadow-[2px_2px_0_var(--accent-cyan)]"
+            className="tooltip-pop z-50 max-w-[200px] break-all rounded-xl border-2 border-neon-pink bg-river-deep px-3 py-1.5 text-xs font-semibold text-[var(--text-primary)] shadow-[2px_2px_0_var(--accent-cyan)]"
           >
             {content}
           </div>
