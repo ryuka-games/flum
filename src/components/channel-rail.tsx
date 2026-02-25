@@ -30,7 +30,7 @@ function ChannelRailItem({
       className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold transition-all ${
         isActive
           ? "border-2 border-neon-pink bg-neon-pink/20 text-white shadow-[2px_2px_0_var(--accent-cyan)]"
-          : "bg-river-surface/60 text-[var(--text-secondary)] hover:bg-river-surface hover:text-[var(--text-primary)]"
+          : "bg-river-deep/85 text-[var(--text-secondary)] ring-1 ring-white/[0.06] backdrop-blur-md hover:bg-river-surface/90 hover:text-[var(--text-primary)] hover:ring-white/[0.10]"
       }`}
       title={label}
     >
@@ -74,7 +74,7 @@ function CreateChannelButton() {
         className={`flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold transition-all ${
           open
             ? "border-2 border-neon-pink bg-neon-pink/20 text-white"
-            : "bg-river-surface/60 text-[var(--text-secondary)] hover:bg-river-surface hover:text-int-accent"
+            : "bg-river-deep/85 text-[var(--text-secondary)] ring-1 ring-white/[0.06] backdrop-blur-md hover:bg-river-surface/90 hover:text-int-accent hover:ring-white/[0.10]"
         }`}
         title="チャンネルを作成"
         aria-label="チャンネルを作成"
@@ -121,7 +121,7 @@ export function ChannelRail({
   return (
     <nav
       aria-label="Channel navigation"
-      className="sticky top-1/2 ml-auto mr-4 flex w-16 -translate-y-1/2 flex-col items-center gap-2 py-4"
+      className="sticky top-1/2 ml-auto mr-4 flex w-16 -translate-y-1/2 flex-col items-center gap-2 rounded-3xl bg-river-deep/60 py-4 backdrop-blur-lg"
     >
       {/* Scoops */}
       <ChannelRailItem

@@ -45,7 +45,7 @@ export function AvatarMenu({
       {/* トリガー: アバター */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-river-surface/80 backdrop-blur-sm transition-all hover:ring-2 hover:ring-neon-pink/50"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-river-deep/85 ring-1 ring-white/[0.06] backdrop-blur-md transition-all hover:bg-river-surface/90 hover:ring-white/[0.10]"
         aria-label="アカウントメニュー"
         aria-expanded={open}
       >

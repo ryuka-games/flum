@@ -54,11 +54,11 @@ export default async function ChannelPage({
 
       <section className="px-4 py-4">
         <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-          <span className="mr-1 text-[var(--text-muted)]">#</span>
+          <span className="mr-1 text-[var(--text-secondary)]">#</span>
           {channel.name}
         </h2>
         {channel.description && (
-          <p className="mt-1 text-xs text-[var(--text-muted)]">{channel.description}</p>
+          <p className="mt-1 text-xs text-[var(--text-secondary)]">{channel.description}</p>
         )}
       </section>
 

@@ -38,7 +38,7 @@ export function MobileChannelFab({
       {/* FAB トリガー */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-[calc(24px+env(safe-area-inset-bottom,0px))] right-6 z-50 flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-neon-pink bg-river-deep/90 text-sm font-bold text-white shadow-[3px_3px_0_var(--accent-cyan)] backdrop-blur-sm md:hidden"
+        className="fixed bottom-[calc(24px+env(safe-area-inset-bottom,0px))] right-6 z-50 flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-neon-pink bg-river-deep/90 text-sm font-bold text-white shadow-[3px_3px_0_var(--accent-cyan)] backdrop-blur-md md:hidden"
         aria-label="チャンネル一覧"
         aria-expanded={open}
       >
@@ -87,7 +87,7 @@ export function MobileChannelFab({
                         : "text-[var(--text-secondary)] hover:bg-river-surface hover:text-[var(--text-primary)]"
                     }`}
                   >
-                    <span className="mr-2 text-[var(--text-muted)]">#</span>
+                    <span className="mr-2 text-[var(--text-secondary)]">#</span>
                     {ch.name}
                   </Link>
                 );

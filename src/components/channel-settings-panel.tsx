@@ -34,7 +34,7 @@ export function ChannelSettingsPanel({
           モバイル: left-[60px]（avatar は left-3, w-10）*/}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed right-[64px] top-6 z-50 flex h-8 w-8 items-center justify-center rounded-full bg-river-surface/80 text-[var(--text-muted)] backdrop-blur-sm transition-all hover:text-int-accent hover:ring-2 hover:ring-neon-pink/50 max-md:left-[52px] max-md:right-auto max-md:top-[calc(12px+env(safe-area-inset-top,0px))]"
+        className="fixed right-[64px] top-6 z-50 flex h-8 w-8 items-center justify-center rounded-full bg-river-deep/85 text-[var(--text-secondary)] ring-1 ring-white/[0.06] backdrop-blur-md transition-all hover:bg-river-surface/90 hover:text-int-accent hover:ring-white/[0.10] max-md:left-[52px] max-md:right-auto max-md:top-[calc(12px+env(safe-area-inset-top,0px))]"
         title="チャンネル設定"
         aria-label="チャンネル設定"
       >
