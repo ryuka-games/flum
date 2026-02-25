@@ -24,6 +24,7 @@ export function SidePanel({
   const panelRef = useRef<HTMLDivElement>(null);
 
   // 外側クリックで閉じる
+  // rAF で1フレーム遅延: トリガーボタンの click と mousedown の競合を回避
   useEffect(() => {
     if (!open) return;
     function handleClick(e: MouseEvent) {
@@ -31,8 +32,13 @@ export function SidePanel({
         onClose();
       }
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    const id = requestAnimationFrame(() => {
+      document.addEventListener("mousedown", handleClick);
+    });
+    return () => {
+      cancelAnimationFrame(id);
+      document.removeEventListener("mousedown", handleClick);
+    };
   }, [open, onClose]);
 
   // Escape で閉じる
