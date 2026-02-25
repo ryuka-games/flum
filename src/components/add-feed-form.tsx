@@ -41,7 +41,7 @@ export function AddFeedForm({ channelId }: { channelId: string }) {
         </button>
       </div>
       {state.error && (
-        <p className="px-1 text-xs text-red-400">{state.error}</p>
+        <p className="px-1 text-xs text-int-danger">{state.error}</p>
       )}
     </form>
   );

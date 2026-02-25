@@ -84,7 +84,7 @@ export function OpmlImport() {
       )}
 
       {error && phase === "idle" && (
-        <p className="mt-1 px-3 text-xs text-red-400">{error}</p>
+        <p className="mt-1 px-3 text-xs text-int-danger">{error}</p>
       )}
 
       {/* プレビュー / 結果モーダル */}
@@ -105,7 +105,7 @@ export function OpmlImport() {
                   </li>
                 ))}
               </ul>
-              {error && <p className="mb-2 text-xs text-red-400">{error}</p>}
+              {error && <p className="mb-2 text-xs text-int-danger">{error}</p>}
               <div className="flex gap-2">
                 <button
                   type="button"

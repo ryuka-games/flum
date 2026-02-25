@@ -21,7 +21,7 @@ export function DeleteFeedSourceButton({
       <input type="hidden" name="channel_id" value={channelId} />
       <button
         type="submit"
-        className="text-[var(--text-muted)] hover:text-red-400"
+        className="text-[var(--text-muted)] hover:text-int-danger"
         aria-label="ソース削除"
       >
         ×

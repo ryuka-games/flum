@@ -85,7 +85,7 @@ export function PresetChips({
       <p className="mb-1.5 text-xs text-[var(--text-secondary)]">おすすめ</p>
       {categories.map(([category, presets]) => (
         <div key={category}>
-          <p className="mb-1 mt-2 first:mt-0 text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+          <p className="mb-1 mt-2 first:mt-0 text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
             {category}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -153,7 +153,7 @@ function PresetButton({
         added
           ? "bg-river-surface text-[var(--text-muted)]"
           : error
-            ? "bg-red-900/30 text-red-400"
+            ? "bg-int-danger/20 text-int-danger"
             : "bg-river-surface text-[var(--text-secondary)] hover:bg-river-border hover:text-[var(--text-primary)]"
       } disabled:cursor-default`}
     >

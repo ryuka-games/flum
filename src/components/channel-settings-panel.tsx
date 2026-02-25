@@ -93,7 +93,7 @@ export function ChannelSettingsPanel({
           <input type="hidden" name="id" value={channelId} />
           <button
             type="submit"
-            className="flex w-full items-center gap-2 text-sm text-red-400 hover:text-red-300"
+            className="flex w-full items-center gap-2 text-sm text-int-danger hover:brightness-110"
             title="チャンネル削除"
           >
             <Trash2 size={14} />
