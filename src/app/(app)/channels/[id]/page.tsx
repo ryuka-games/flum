@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { FeedPresets } from "@/components/feed-presets";
 import { ChannelFeedView } from "@/components/channel-feed-view";
-import { RefreshButton } from "@/components/refresh-button";
 import { ChannelSettingsPanel } from "@/components/channel-settings-panel";
 
 export default async function ChannelPage({
@@ -54,15 +53,10 @@ export default async function ChannelPage({
       />
 
       <section className="px-4 py-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-            <span className="mr-1 text-[var(--text-muted)]">#</span>
-            {channel.name}
-          </h2>
-          {hasSources && (
-            <RefreshButton channelId={channel.id} feedSourceIds={feedSourceIds} />
-          )}
-        </div>
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+          <span className="mr-1 text-[var(--text-muted)]">#</span>
+          {channel.name}
+        </h2>
         {channel.description && (
           <p className="mt-1 text-xs text-[var(--text-muted)]">{channel.description}</p>
         )}
