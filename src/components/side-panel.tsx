@@ -14,11 +14,13 @@ export function SidePanel({
   open,
   onClose,
   title,
+  headerActions,
   children,
 }: {
   open: boolean;
   onClose: () => void;
   title: string;
+  headerActions?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -76,13 +78,16 @@ export function SidePanel({
           <h3 className="text-sm font-bold text-[var(--text-primary)]">
             {title}
           </h3>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-            aria-label="閉じる"
-          >
-            <X size={16} />
-          </button>
+          <div className="flex items-center gap-1">
+            {headerActions}
+            <button
+              onClick={onClose}
+              className="rounded-lg p-1 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              aria-label="閉じる"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
 
         {children}
