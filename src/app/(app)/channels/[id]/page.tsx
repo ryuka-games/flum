@@ -52,16 +52,6 @@ export default async function ChannelPage({
         existingUrls={existingUrls}
       />
 
-      <div className="px-4 pt-3 pb-1">
-        <h2
-          className="inline-flex items-center gap-1.5 rounded-full bg-river-deep/85 px-3 py-1 text-sm font-semibold text-[var(--text-primary)] ring-1 ring-white/[0.06] backdrop-blur-md"
-          title={channel.description ?? undefined}
-        >
-          <span className="text-[var(--text-secondary)]">#</span>
-          {channel.name}
-        </h2>
-      </div>
-
       {hasSources ? (
         <ChannelFeedView
           channelId={channel.id}
