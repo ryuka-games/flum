@@ -20,19 +20,16 @@ function useChannelId(): string | null {
  * Flum = Flume（水路）。星空が川面に映り、光が水面で揺れる。
  *
  * レイヤー構成:
- * 1. 星空（3層 Moiré ドットグリッド — 上半分）
+ * 1. 星空（3層 Moire ドットグリッド — 上半分）
  * 2. 水面反射（星のぼかしミラー — 下半分）
  * 3. 水平線（空と水面の境界）
  * 4. 揺らめき（水面で踊る光 — パルスアニメーション）
  * 5. 水流ライン（漂う光の筋 — 情報の流れ）
  * 6. 環境光（街の灯りの映り込み）
  */
-function RiverNightDeco({ sidebarWidth }: { sidebarWidth: string }) {
+function RiverNightDeco() {
   return (
-    <div
-      className="wallpaper-left pointer-events-none fixed right-0 top-0 bottom-0 z-0 overflow-hidden"
-      style={{ "--sidebar-width": sidebarWidth } as React.CSSProperties}
-    >
+    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
       {/* 星空 — 上半分にマスク */}
       <div className="absolute inset-0 river-sky">
         <div className="absolute inset-0 river-stars-far" />
@@ -68,7 +65,7 @@ function RiverNightDeco({ sidebarWidth }: { sidebarWidth: string }) {
   );
 }
 
-export function WallpaperLayer({ sidebarWidth }: { sidebarWidth: string }) {
+export function WallpaperLayer() {
   const channelId = useChannelId();
 
   const url = useSyncExternalStore(
@@ -82,12 +79,12 @@ export function WallpaperLayer({ sidebarWidth }: { sidebarWidth: string }) {
     if (channelId) loadWallpaper(channelId);
   }, [channelId]);
 
-  if (!url) return <RiverNightDeco sidebarWidth={sidebarWidth} />;
+  if (!url) return <RiverNightDeco />;
 
   return (
     <div
-      className="wallpaper-left pointer-events-none fixed right-0 top-0 bottom-0 z-0 bg-cover bg-center bg-no-repeat"
-      style={{ "--sidebar-width": sidebarWidth, backgroundImage: `url(${url})` } as React.CSSProperties}
+      className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${url})` }}
     >
       <div className="absolute inset-0 bg-[var(--glass-overlay)]" />
     </div>

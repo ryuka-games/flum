@@ -41,16 +41,14 @@ export default async function ScoopsPage({
 
   return (
     <>
-      <div className="sticky top-0 z-40 bg-river-deep">
-        <header className="px-4 py-3 pl-14 md:pl-4">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-            Scoops
-          </h2>
-        </header>
+      <section className="px-4 py-4">
+        <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+          Scoops
+        </h2>
 
         {/* チャンネルフィルタ */}
         {channelNames.length > 0 && (
-          <div className="flex flex-wrap gap-2 border-b border-river-border px-4 py-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             <Link
               href="/scoops"
               className={`rounded-full border-2 px-3 py-0.5 text-xs transition-colors ${
@@ -76,7 +74,7 @@ export default async function ScoopsPage({
             ))}
           </div>
         )}
-      </div>
+      </section>
 
       <div>
         {favorites && favorites.length > 0 ? (

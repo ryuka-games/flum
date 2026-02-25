@@ -50,9 +50,8 @@ export default async function ChannelPage({
 
   return (
     <>
-      <div className="sticky top-0 z-40">
-        <div className="absolute inset-0 -z-10 bg-river-deep/80 backdrop-blur-md" />
-        <header className="flex items-center justify-between px-4 py-3 pl-14 md:pl-4">
+      <section className="px-4 py-4">
+        <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-[var(--text-primary)]">
               <span className="mr-1 text-[var(--text-muted)]">#</span>
@@ -71,7 +70,7 @@ export default async function ChannelPage({
 
             {hasSources && (
               <>
-                {/* ↻ リフレッシュ: 頻繁に使うのでヘッダー直置き */}
+                {/* ↻ リフレッシュ */}
                 <RefreshButton channelId={channel.id} feedSourceIds={feedSourceIds} />
 
                 {/* ⚙ チャンネル設定 */}
@@ -112,8 +111,8 @@ export default async function ChannelPage({
               </>
             )}
           </div>
-        </header>
-      </div>
+        </div>
+      </section>
 
       {hasSources ? (
         <ChannelFeedView

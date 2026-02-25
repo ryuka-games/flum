@@ -74,11 +74,6 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* サイドバーの微細ドットパターン（ドーナドーナのスクリーントーン要素） */
-aside {
-  background-image: radial-gradient(circle, rgba(255, 59, 154, 0.03) 1px, transparent 1px);
-  background-size: 12px 12px;
-}
 
 /* --- カラードレイン ---
    Splatoon: 彩度剥奪 = 弱体化
@@ -351,12 +346,3 @@ aside {
   .river-shimmer { opacity: 0.08; }
 }
 
-/* 壁紙レイヤー: モバイルでは全幅、デスクトップではサイドバー分オフセット */
-.wallpaper-left {
-  left: 0;
-}
-@media (min-width: 768px) {
-  .wallpaper-left {
-    left: var(--sidebar-width);
-  }
-}
