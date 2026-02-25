@@ -45,7 +45,7 @@ export function AvatarMenu({
       {/* トリガー: アバター */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-10 w-10 items-center justify-center rounded-full bg-river-surface/80 backdrop-blur-sm transition-all hover:ring-2 hover:ring-neon-pink/50"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-river-surface/80 backdrop-blur-sm transition-all hover:ring-2 hover:ring-neon-pink/50"
         aria-label="アカウントメニュー"
         aria-expanded={open}
       >
@@ -53,7 +53,7 @@ export function AvatarMenu({
           <img
             src={avatarUrl}
             alt="avatar"
-            className="h-10 w-10 rounded-full"
+            className="h-8 w-8 rounded-full"
           />
         ) : (
           <span className="text-sm font-bold text-[var(--text-secondary)]">
