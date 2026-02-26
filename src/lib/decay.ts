@@ -44,7 +44,7 @@ const DECAY_STAGES: Record<FreshnessStage, DecayStyle | null> = {
   },
   aging: {
     filter: "saturate(0.45) brightness(0.92) sepia(0.15) hue-rotate(190deg)",
-    opacity: 0.8,
+    opacity: 0.9,
     shadowColor: "var(--accent-purple)",
     className: "",
     freshness: "aging",
