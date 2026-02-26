@@ -78,7 +78,7 @@ export default async function ScoopsPage({
 
       <div>
         {favorites && favorites.length > 0 ? (
-          <div className="mx-auto w-full max-w-xl divide-y divide-river-border/50 bg-[var(--glass-bg)] backdrop-blur-md">
+          <div className="mx-auto flex w-full max-w-xl flex-col gap-2 px-2">
             {favorites.map((fav) => (
               <FeedItem
                 key={fav.id}
@@ -89,7 +89,6 @@ export default async function ScoopsPage({
                 channelName={fav.channel_name ?? undefined}
                 favoriteId={fav.id}
                 ogImage={fav.og_image ?? undefined}
-                ogDescription={fav.og_description ?? undefined}
                 thumbnailUrl={fav.thumbnail_url ?? undefined}
                 noDecay
               />
