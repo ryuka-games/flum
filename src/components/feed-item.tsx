@@ -126,7 +126,7 @@ export function FeedItem({
 
   return (
     <div
-      className="group relative overflow-hidden rounded-2xl hover:shadow-[3px_3px_0_var(--decay-shadow,var(--accent-pink))]"
+      className="group relative overflow-hidden hover:bg-river-surface/60 hover:shadow-[3px_3px_0_var(--decay-shadow,var(--accent-pink))]"
       data-decay={decay ? "true" : undefined}
       data-freshness={decay?.freshness ?? "fresh"}
       data-card-enter={enterIndex != null ? "" : undefined}
@@ -147,7 +147,7 @@ export function FeedItem({
       <a href={url} className="absolute inset-0 z-10" aria-hidden="true" tabIndex={-1} />
 
       {/* コンテンツ */}
-      <div className={`pointer-events-none relative z-20 px-4 py-4 group-hover:bg-river-surface/60 ${decay?.className ?? ""}`}>
+      <div className={`pointer-events-none relative z-20 px-4 py-4 ${decay?.className ?? ""}`}>
         {/* ソース情報（上） */}
         <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
           {sourceName && (
