@@ -87,7 +87,7 @@ export function FeedItem({
         </a>
 
         {imageUrl && (
-          <img src={imageUrl} alt="" className="mt-3 max-h-48 w-full rounded-xl object-contain" loading="lazy" />
+          <img src={imageUrl} alt="" className="mt-3 max-h-56 w-full rounded-xl object-contain" loading="lazy" />
         )}
 
         {/* フッター: ソース情報 + アクション */}
