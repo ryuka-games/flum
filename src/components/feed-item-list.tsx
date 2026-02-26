@@ -96,7 +96,7 @@ export function FeedItemList({
   });
 
   return (
-    <div className="mx-auto flex w-full max-w-xl flex-col gap-2 px-2">
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-2 px-2 pb-6">
       {elements}
     </div>
   );
