@@ -27,10 +27,8 @@ type FeedItemData = {
 
 function TimeGroupDivider({ label }: { label: string }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-2">
-      <div className="h-px flex-1 bg-river-border/50" />
+    <div className="flex justify-center px-4 py-2">
       <span className="rounded-full bg-black/60 px-3 py-0.5 text-xs text-[var(--text-secondary)]">{label}</span>
-      <div className="h-px flex-1 bg-river-border/50" />
     </div>
   );
 }
