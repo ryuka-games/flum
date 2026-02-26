@@ -34,7 +34,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
         </div>
 
         {/* 中央: メインコンテンツ */}
-        <main className="flex min-w-0 flex-col pb-[calc(104px+env(safe-area-inset-bottom,0px))] md:pb-0">
+        <main className="flex min-w-0 flex-col pt-6 pb-[calc(104px+env(safe-area-inset-bottom,0px))] md:pb-0">
           {children}
         </main>
 
