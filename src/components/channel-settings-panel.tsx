@@ -47,20 +47,6 @@ export function ChannelSettingsPanel({
         open={open}
         onClose={() => setOpen(false)}
         title={`# ${channelName}`}
-        headerActions={
-          <form action={deleteChannel}>
-            <input type="hidden" name="id" value={channelId} />
-            <Tooltip content="チャンネルを削除">
-              <button
-                type="submit"
-                className="rounded-lg p-1 text-int-danger hover:brightness-110"
-                aria-label="チャンネルを削除"
-              >
-                <Trash2 size={14} />
-              </button>
-            </Tooltip>
-          </form>
-        }
       >
         {/* フィード追加 */}
         <section className="mb-4">
@@ -97,9 +83,26 @@ export function ChannelSettingsPanel({
         )}
 
         {/* 壁紙 */}
-        <section>
+        <section className="mb-4">
           <WallpaperPicker channelId={channelId} />
         </section>
+
+        {/* チャンネル削除 — 底部右寄せ（破壊的操作を空間的に隔離） */}
+        <form
+          action={deleteChannel}
+          className="flex justify-end border-t border-river-border pt-3"
+        >
+          <input type="hidden" name="id" value={channelId} />
+          <Tooltip content="チャンネルを削除">
+            <button
+              type="submit"
+              className="rounded-lg p-1 text-int-danger hover:brightness-110"
+              aria-label="チャンネルを削除"
+            >
+              <Trash2 size={14} />
+            </button>
+          </Tooltip>
+        </form>
       </SidePanel>
     </>
   );
