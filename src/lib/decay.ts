@@ -51,14 +51,14 @@ const DECAY_STAGES: Record<FreshnessStage, DecayStyle | null> = {
   },
   old: {
     filter: "saturate(0.15) brightness(0.85) sepia(0.25) hue-rotate(190deg)",
-    opacity: 0.75,
+    opacity: 0.85,
     shadowColor: "var(--accent-cyan)",
     className: "",
     freshness: "old",
   },
   stale: {
     filter: "saturate(0.05) brightness(0.78) sepia(0.3) hue-rotate(200deg)",
-    opacity: 0.65,
+    opacity: 0.75,
     shadowColor: "var(--old-color)",
     className: "glitch-text",
     freshness: "stale",
