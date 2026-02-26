@@ -27,10 +27,10 @@ type FeedItemData = {
 
 function TimeGroupDivider({ label }: { label: string }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-1">
-      <div className="h-px flex-1 bg-river-border/30" />
+    <div className="flex items-center gap-3 px-4 py-2">
+      <div className="h-px flex-1 bg-river-border/50" />
       <span className="text-xs text-[var(--text-muted)]">{label}</span>
-      <div className="h-px flex-1 bg-river-border/30" />
+      <div className="h-px flex-1 bg-river-border/50" />
     </div>
   );
 }

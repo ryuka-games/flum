@@ -78,35 +78,36 @@ export function FeedItem({
 
       {/* コンテンツ */}
       <div className={`pointer-events-none relative z-20 px-4 py-4 ${decay?.className ?? ""}`}>
-        {/* ソース情報（上） */}
-        <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+        {/* タイトル（最上段） */}
+        <a
+          href={url}
+          className="line-clamp-2 block text-base font-medium leading-normal text-[var(--text-primary)]"
+        >
+          {title}
+        </a>
+
+        {imageUrl && (
+          <img src={imageUrl} alt="" className="mt-3 max-h-40 w-full rounded-xl object-contain" loading="lazy" />
+        )}
+
+        {/* フッター: ソース情報 + アクション */}
+        <div className="mt-3 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
           {sourceName && (
             <>
               <span
-                className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white/90 ${getColorForName(sourceName)}`}
+                className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-[8px] font-bold text-white/90 ${getColorForName(sourceName)}`}
               >
                 {sourceName.charAt(0).toUpperCase()}
               </span>
               <span className="truncate">{sourceName}</span>
             </>
           )}
-        </div>
-
-        {/* タイトル */}
-        <a
-          href={url}
-          className="mt-1 line-clamp-2 block text-base font-medium leading-normal text-[var(--text-primary)]"
-        >
-          {title}
-        </a>
-
-        {imageUrl && (
-          <img src={imageUrl} alt="" className="mt-3 max-h-64 w-full rounded-xl object-contain" loading="lazy" />
-        )}
-
-        {/* アクション行（下） */}
-        <div className="mt-3 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-          {channelName && !hideChannelLabel && <span className="truncate"># {channelName}</span>}
+          {channelName && !hideChannelLabel && (
+            <>
+              {sourceName && <span>·</span>}
+              <span className="truncate"># {channelName}</span>
+            </>
+          )}
           <span className="ml-auto flex flex-shrink-0 items-center gap-1.5">
             <span className="pointer-events-auto opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
               <ShareButtons title={title} url={url} />
