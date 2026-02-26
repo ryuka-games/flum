@@ -126,7 +126,7 @@ export function FeedItem({
 
   return (
     <div
-      className="group relative overflow-hidden hover:bg-river-surface/60 hover:shadow-[3px_3px_0_var(--decay-shadow,var(--accent-pink))]"
+      className="group relative overflow-hidden rounded-2xl bg-[var(--glass-bg)] backdrop-blur-md hover:bg-river-surface/60 hover:shadow-[3px_3px_0_var(--decay-shadow,var(--accent-pink))]"
       data-decay={decay ? "true" : undefined}
       data-freshness={decay?.freshness ?? "fresh"}
       data-card-enter={enterIndex != null ? "" : undefined}

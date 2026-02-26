@@ -43,7 +43,7 @@ export function FeedItemList({
   }
 
   return (
-    <div className="mx-auto w-full max-w-xl divide-y divide-river-border/50 bg-[var(--glass-bg)] backdrop-blur-md">
+    <div className="mx-auto flex w-full max-w-xl flex-col gap-2 px-2">
       {items.map((item, i) => (
         <FeedItem
           key={item.id}
