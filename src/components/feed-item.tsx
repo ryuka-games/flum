@@ -2,7 +2,7 @@
 
 import { Pin } from "lucide-react";
 import { toggleFavorite, removeFavorite } from "@/app/actions/favorite";
-import { ShareButtons } from "@/components/share-button";
+import { SharePopover } from "@/components/share-button";
 import { getDecayStyle } from "@/lib/decay";
 import { useClientNow } from "@/lib/client-now";
 
@@ -56,7 +56,7 @@ export function FeedItem({
 
   return (
     <div
-      className="click-ripple card-float group relative rounded-2xl bg-[var(--glass-bg)] backdrop-blur-md"
+      className="card-float group relative rounded-2xl bg-[var(--glass-bg)] backdrop-blur-md"
       data-decay={decay ? "true" : undefined}
       data-freshness={decay?.freshness ?? "fresh"}
       data-card-enter={enterIndex != null ? "" : undefined}
@@ -74,11 +74,16 @@ export function FeedItem({
       }
     >
       {/* カード全体をクリッカブルにするリンク */}
-      <a href={url} className="absolute inset-0 z-10" aria-hidden="true" tabIndex={-1} />
+      <a href={url} className="click-ripple absolute inset-0 z-10 rounded-2xl" aria-hidden="true" tabIndex={-1} />
 
       {/* コンテンツ */}
-      <div className={`pointer-events-none relative z-20 px-4 py-4 ${decay?.className ?? ""}`}>
-        {/* タイトル（最上段） */}
+      <div className={`pointer-events-none relative z-20 p-4 md:p-6 ${decay?.className ?? ""}`}>
+        {/* 画像（あれば最上段） */}
+        {imageUrl && (
+          <img src={imageUrl} alt="" className="mb-4 w-full rounded-xl" loading="lazy" />
+        )}
+
+        {/* タイトル */}
         <a
           href={url}
           className="line-clamp-2 block text-base font-medium leading-normal text-[var(--text-primary)]"
@@ -86,12 +91,8 @@ export function FeedItem({
           {title}
         </a>
 
-        {imageUrl && (
-          <img src={imageUrl} alt="" className="mt-3 max-h-56 w-full rounded-xl object-contain" loading="lazy" />
-        )}
-
         {/* フッター: ソース情報 + アクション */}
-        <div className="mt-3 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
+        <div className="mt-4 flex items-center gap-2 text-xs text-[var(--text-secondary)]">
           {sourceName && (
             <>
               <span
@@ -109,13 +110,13 @@ export function FeedItem({
             </>
           )}
           <span className="ml-auto flex flex-shrink-0 items-center gap-1.5">
-            <span className="pointer-events-auto opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100">
-              <ShareButtons title={title} url={url} />
+            <span className="pointer-events-auto">
+              <SharePopover title={title} url={url} />
             </span>
             {favoriteId ? (
               <form
                 action={removeFavorite}
-                className="pointer-events-auto relative z-10 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100"
+                className="pointer-events-auto relative z-10"
               >
                 <input type="hidden" name="id" value={favoriteId} />
                 <button
@@ -129,7 +130,7 @@ export function FeedItem({
             ) : (
               <form
                 action={toggleFavorite}
-                className={`pointer-events-auto relative z-10 ${isFavorited ? "" : "opacity-100 md:opacity-0 md:group-hover:opacity-100"} transition-opacity`}
+                className="pointer-events-auto relative z-10"
               >
                 <input type="hidden" name="url" value={url} />
                 <input type="hidden" name="title" value={title} />

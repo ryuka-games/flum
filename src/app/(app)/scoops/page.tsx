@@ -41,11 +41,7 @@ export default async function ScoopsPage({
 
   return (
     <>
-      <section className="px-4 py-4">
-        <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-          Scoops
-        </h2>
-
+      <section className="px-4 pb-4">
         {/* チャンネルフィルタ */}
         {channelNames.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">

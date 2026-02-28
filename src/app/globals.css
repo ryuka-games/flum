@@ -307,6 +307,7 @@ body {
   translate: 0 var(--lift-md);
   scale: var(--scale-md);
   box-shadow:
+    3px 3px 0 var(--decay-shadow, var(--accent-pink)),
     0 8px 24px -4px rgba(0, 0, 0, 0.45),
     0 4px 12px -2px rgba(0, 0, 0, 0.25),
     0 0 24px -4px var(--glow-cyan-medium),
@@ -360,6 +361,10 @@ body {
 }
 .click-ripple:active::before {
   animation: click-wave 0.4s ease-out forwards;
+}
+/* カードリンククリック時のみカード全体を沈み込ませる */
+.card-float:has(> .click-ripple:active) {
+  translate: 0 1px;
 }
 
 @keyframes click-wave {
