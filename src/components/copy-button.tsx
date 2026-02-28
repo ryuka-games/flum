@@ -14,7 +14,7 @@ export function CopyButton({ url }: { url: string }) {
   return (
     <button
       onClick={handleCopy}
-      className="cursor-pointer rounded-lg px-1 text-[var(--text-faded)] hover:text-int-accent"
+      className="cursor-pointer rounded-lg px-1 text-[var(--text-muted)] hover:text-int-accent"
       aria-label="URL をコピー"
     >
       {copied ? "✓" : "URL"}

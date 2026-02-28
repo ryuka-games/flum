@@ -111,12 +111,12 @@ export function FlowLine() {
   // 通常: フルグラデーション / ローディング: 左から伸びる
   if (!loading) {
     return (
-      <div className="pointer-events-none fixed left-0 right-0 top-[3.25rem] z-50 h-[2px] bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan" />
+      <div className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-[2px] bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan" />
     );
   }
 
   return (
-    <div className="pointer-events-none fixed left-0 right-0 top-[3.25rem] z-50 h-[2px]">
+    <div className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-[2px]">
       <div
         className="h-full bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan transition-[width] ease-out"
         style={{

@@ -41,22 +41,16 @@ export default async function ScoopsPage({
 
   return (
     <>
-      <div className="sticky top-0 z-40 bg-river-deep">
-        <header className="px-4 py-3 pl-14 md:pl-4">
-          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-            Scoops
-          </h2>
-        </header>
-
+      <section className="px-4 pb-4">
         {/* チャンネルフィルタ */}
         {channelNames.length > 0 && (
-          <div className="flex flex-wrap gap-2 border-b border-river-border px-4 py-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             <Link
               href="/scoops"
               className={`rounded-full border-2 px-3 py-0.5 text-xs transition-colors ${
                 !filterChannel
                   ? "border-neon-pink bg-neon-pink font-bold text-white shadow-[2px_2px_0_var(--accent-cyan)]"
-                  : "border-river-border bg-river-surface text-[var(--text-muted)] hover:border-neon-pink hover:text-[var(--text-primary)]"
+                  : "border-river-border bg-river-surface text-[var(--text-secondary)] hover:border-neon-pink hover:text-[var(--text-primary)]"
               }`}
             >
               すべて
@@ -68,7 +62,7 @@ export default async function ScoopsPage({
                 className={`rounded-full border-2 px-3 py-0.5 text-xs transition-colors ${
                   filterChannel === name
                     ? "border-neon-pink bg-neon-pink font-bold text-white shadow-[2px_2px_0_var(--accent-cyan)]"
-                    : "border-river-border bg-river-surface text-[var(--text-muted)] hover:border-neon-pink hover:text-[var(--text-primary)]"
+                    : "border-river-border bg-river-surface text-[var(--text-secondary)] hover:border-neon-pink hover:text-[var(--text-primary)]"
                 }`}
               >
                 # {name}
@@ -76,11 +70,11 @@ export default async function ScoopsPage({
             ))}
           </div>
         )}
-      </div>
+      </section>
 
       <div>
         {favorites && favorites.length > 0 ? (
-          <div className="mx-auto w-full max-w-xl divide-y divide-river-border/50 bg-[var(--glass-bg)] backdrop-blur-md">
+          <div className="mx-auto flex w-full max-w-xl flex-col gap-2 px-2">
             {favorites.map((fav) => (
               <FeedItem
                 key={fav.id}
@@ -91,17 +85,16 @@ export default async function ScoopsPage({
                 channelName={fav.channel_name ?? undefined}
                 favoriteId={fav.id}
                 ogImage={fav.og_image ?? undefined}
-                ogDescription={fav.og_description ?? undefined}
                 thumbnailUrl={fav.thumbnail_url ?? undefined}
                 noDecay
               />
             ))}
           </div>
         ) : (
-          <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-muted)]">
+          <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-secondary)]">
             <div className="text-center">
               <p className="mb-2">Scoop した記事はまだありません</p>
-              <p className="text-sm text-[var(--text-faded)]">
+              <p className="text-sm text-[var(--text-secondary)]">
                 フィードの <Pin size={14} className="inline text-neon-pink" /> をクリックして流れから掬い上げましょう
               </p>
             </div>

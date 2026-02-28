@@ -5,6 +5,7 @@ import { addFeedSource } from "@/app/actions/feed";
 import { putItems } from "@/lib/feed/store";
 import { FEED_PRESETS, type FeedPreset } from "@/lib/feed/presets";
 import { AddFeedForm } from "./add-feed-form";
+import { Tooltip } from "@/components/tooltip";
 
 /** プリセットをカテゴリごとにグループ化 */
 function groupByCategory(
@@ -34,14 +35,14 @@ export function FeedPresets({
       <h3 className="text-lg font-semibold text-[var(--text-primary)]">
         フィードを追加しましょう
       </h3>
-      <p className="mt-1 text-sm text-[var(--text-muted)]">
+      <p className="mt-1 text-sm text-[var(--text-secondary)]">
         おすすめから選ぶか、URL を直接入力できます
       </p>
 
       <div className="mt-8 space-y-5 text-left">
         {categories.map(([category, presets]) => (
           <div key={category}>
-            <p className="mb-2 text-xs font-medium text-[var(--text-muted)]">
+            <p className="mb-2 text-xs font-medium text-[var(--text-secondary)]">
               {category}
             </p>
             <div className="flex flex-wrap gap-2">
@@ -59,7 +60,7 @@ export function FeedPresets({
       </div>
 
       <div className="mt-10 border-t border-river-border/50 pt-6 text-left">
-        <p className="mb-2 text-xs text-[var(--text-muted)]">URL を直接入力</p>
+        <p className="mb-2 text-xs text-[var(--text-secondary)]">URL を直接入力</p>
         <AddFeedForm channelId={channelId} />
       </div>
     </div>
@@ -82,10 +83,10 @@ export function PresetChips({
 
   return (
     <div className="mt-3">
-      <p className="mb-1.5 text-xs text-[var(--text-muted)]">おすすめ</p>
+      <p className="mb-1.5 text-xs text-[var(--text-secondary)]">おすすめ</p>
       {categories.map(([category, presets]) => (
         <div key={category}>
-          <p className="mb-1 mt-2 first:mt-0 text-[10px] font-bold uppercase tracking-wider text-[var(--text-faded)]">
+          <p className="mb-1 mt-2 first:mt-0 text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
             {category}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -144,21 +145,43 @@ function PresetButton({
     ? "rounded-full px-2.5 py-0.5 text-xs"
     : "rounded-xl px-3 py-1.5 text-sm";
 
-  return (
-    <button
-      onClick={handleClick}
-      disabled={disabled}
-      title={error ?? preset.url}
-      className={`${baseStyle} transition-colors ${
-        added
-          ? "bg-river-surface text-[var(--text-muted)]"
-          : error
-            ? "bg-red-900/30 text-red-400"
-            : "bg-river-surface text-[var(--text-secondary)] hover:bg-river-border hover:text-[var(--text-primary)]"
-      } disabled:cursor-default`}
-    >
+  const btnClassName = `${baseStyle} transition-colors ${
+    added
+      ? "bg-river-surface text-[var(--text-muted)]"
+      : error
+        ? "bg-int-danger/20 text-int-danger"
+        : "bg-river-surface text-[var(--text-secondary)] hover:bg-river-border hover:text-[var(--text-primary)]"
+  } disabled:cursor-default`;
+
+  const btnContent = (
+    <>
       {added ? "✓" : isPending ? "…" : "+"}{" "}
       {preset.name}
+    </>
+  );
+
+  // エラー時のみツールチップでエラー内容を表示
+  if (error) {
+    return (
+      <Tooltip content={error}>
+        {(ref, props) => (
+          <button
+            ref={ref}
+            {...props}
+            onClick={handleClick}
+            disabled={disabled}
+            className={btnClassName}
+          >
+            {btnContent}
+          </button>
+        )}
+      </Tooltip>
+    );
+  }
+
+  return (
+    <button onClick={handleClick} disabled={disabled} className={btnClassName}>
+      {btnContent}
     </button>
   );
 }

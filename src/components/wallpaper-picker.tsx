@@ -33,9 +33,9 @@ export function WallpaperPicker({ channelId }: { channelId: string }) {
 
   return (
     <div className="mt-3 border-t border-river-border pt-3">
-      <p className="mb-1.5 text-xs text-[var(--text-muted)]">壁紙</p>
+      <p className="mb-1.5 text-xs text-[var(--text-secondary)]">壁紙</p>
       <div className="flex items-center gap-2">
-        <label className="cursor-pointer rounded-xl border-2 border-river-border px-3 py-1.5 text-xs text-[var(--text-muted)] transition-colors hover:border-int-accent hover:text-int-accent">
+        <label className="cursor-pointer rounded-xl border-2 border-river-border px-3 py-1.5 text-xs text-[var(--text-secondary)] transition-colors hover:border-int-accent hover:text-int-accent">
           <ImagePlus size={14} className="mr-1 inline" />
           {url ? "変更" : "設定"}
           <input
@@ -48,7 +48,7 @@ export function WallpaperPicker({ channelId }: { channelId: string }) {
         {url && (
           <button
             onClick={handleRemove}
-            className="rounded-xl border-2 border-river-border px-3 py-1.5 text-xs text-[var(--text-muted)] transition-colors hover:border-int-danger hover:text-int-danger"
+            className="rounded-xl border-2 border-river-border px-3 py-1.5 text-xs text-[var(--text-secondary)] transition-colors hover:border-int-danger hover:text-int-danger"
           >
             <X size={14} className="mr-1 inline" />
             削除

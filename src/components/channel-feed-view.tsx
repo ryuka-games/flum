@@ -39,7 +39,8 @@ export function ChannelFeedView({
     () => getItemsSnapshot([]),
   );
 
-  // 初回ロード: IDB から読み取り、空ならサーバーからフェッチ
+  // 初回ロード: IDB キャッシュを即表示 + バックグラウンドで最新をフェッチ
+  // キャッシュがあっても裏で更新する = ページを開けば勝手に流れてくる
   useEffect(() => {
     if (feedSourceIds.length === 0) return;
 
@@ -47,11 +48,12 @@ export function ChannelFeedView({
 
     async function init() {
       await pruneExpiredItems();
-      const cached = await getItemsBySourceIds(feedSourceIds);
+      // IDB キャッシュを読み込み（即表示用）
+      await getItemsBySourceIds(feedSourceIds);
 
-      if (cached.length > 0 || cancelled) return;
+      if (cancelled) return;
 
-      // IDB が空 → サーバーからフェッチ
+      // バックグラウンドで最新をフェッチ（キャッシュの有無に関わらず）
       startTransition(async () => {
         const fetched = await refreshChannelById(channelId).catch(() => []);
         if (cancelled || fetched.length === 0) return;
@@ -95,14 +97,11 @@ export function ChannelFeedView({
       published_at: item.publishedAt,
       feed_source_id: item.feedSourceId,
       og_image: item.ogImage,
-      og_description: item.ogDescription,
-      content: item.content,
-      fetchedAt: item.fetchedAt,
     }));
 
   if (isRefreshing && feedItems.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-muted)]">
+      <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-secondary)]">
         <p>読み込み中...</p>
       </div>
     );
