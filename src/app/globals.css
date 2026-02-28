@@ -20,6 +20,33 @@
   --recent-glow: 0 0 6px rgba(255, 107, 193, 0.5);
   --aging-color: #ffdd00;
   --aging-glow: 0 0 6px rgba(255, 221, 0, 0.4);
+
+  /* ── Float System Tokens ── */
+
+  /* グロー強度（シアン反射光） */
+  --glow-cyan-subtle: rgba(0, 229, 255, 0.08);
+  --glow-cyan-soft:   rgba(0, 229, 255, 0.12);
+  --glow-cyan-medium: rgba(0, 229, 255, 0.18);
+
+  /* リフト量（ホバー時の浮き上がり） */
+  --lift-sm: -2px;    /* ボタン・アイコン */
+  --lift-md: -3px;    /* カード */
+  --scale-sm: 1.08;   /* ボタン・アイコン */
+  --scale-md: 1.01;   /* カード */
+
+  /* タイミング */
+  --ease-float: 0.2s ease-out;       /* 浮遊トランジション */
+  --ease-decay-slow: 1.2s ease-out;  /* ドレイン（色が失われる） */
+  --ease-decay-fast: 0.08s ease-out; /* カラーフラッシュ（色が戻る） */
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* バウンスカーブ */
+
+  /* ネオブルータリスト影（オフセット + シアン） */
+  --neo-sm: 2px 2px 0 var(--accent-cyan);
+  --neo-md: 3px 3px 0 var(--accent-cyan);
+  --neo-lg: 4px 4px 0 var(--accent-cyan);
+
+  /* 水面ボブ振幅 */
+  --float-amplitude: 3px;
 }
 
 /* --- Dark: ネオンポップの舞台（近黒 + ビビッドアクセント） --- */
@@ -64,6 +91,11 @@
   --color-int-accent: var(--accent-cyan);   /* Secondary/bordered ホバーアクセント */
   --color-int-danger: #f87171;               /* Destructive ホバー */
 
+  /* ネオブルータリスト影 */
+  --shadow-neo-sm: 2px 2px 0 var(--accent-cyan);
+  --shadow-neo-md: 3px 3px 0 var(--accent-cyan);
+  --shadow-neo-lg: 4px 4px 0 var(--accent-cyan);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -78,21 +110,22 @@ body {
 /* --- カラードレイン ---
    Splatoon: 彩度剥奪 = 弱体化
    Persona 5: 彩度 + 色温度シフト = 状態変化
-   非対称トランジション: ゆっくり色を失い、瞬時に復活（カラーフラッシュ） */
+   非対称トランジション: ゆっくり色を失い、瞬時に復活（カラーフラッシュ）
 
-/* 色を失う方向: ゆっくり（ページ表示時） */
+   重要: transition は card-float と統合管理（CSS の transition はマージされないため）
+   decay 単体の transition はここに書かない → .card-float セクションで一括定義 */
+
 [data-decay="true"] {
   opacity: var(--decay-opacity, 1);
-  transition: filter 1.2s ease-out, opacity 1.2s ease-out;
+  /* transition は .card-float / .card-float[data-decay] で統合管理 */
 }
 
-/* ホバー / タップ: 瞬時復帰（0.08s）= Splatoon の「色が戻る」快感
-   :hover はデスクトップ、:active はモバイルタップ */
+/* ホバー / タップ: 瞬時復帰 = Splatoon の「色が戻る」快感 */
 [data-decay="true"]:hover,
 [data-decay="true"]:active {
   filter: none !important;
   opacity: 1 !important;
-  transition: filter 0.08s ease-out, opacity 0.08s ease-out;
+  /* transition は .card-float[data-decay]:hover で統合管理 */
 }
 
 /* モバイル: ホバーなし端末では filter 無効・opacity のみで鮮度表現 */
@@ -112,7 +145,7 @@ body {
   --pop-duration: 0.35s;
   --pop-stagger: 120ms;
 
-  animation: card-pop var(--pop-duration) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: card-pop var(--pop-duration) var(--spring) both;
   animation-delay: var(--enter-delay, 0ms);
 }
 
@@ -120,7 +153,7 @@ body {
    delay = 入場遅延 + pop 所要時間。pop が終わってから pulse が始まる。 */
 [data-card-enter][data-freshness="fresh"] {
   animation:
-    card-pop var(--pop-duration) cubic-bezier(0.34, 1.56, 0.64, 1) both,
+    card-pop var(--pop-duration) var(--spring) both,
     fresh-pulse 1.5s ease-in-out calc(var(--enter-delay, 0ms) + var(--pop-duration)) 2;
 }
 
@@ -170,13 +203,13 @@ body {
    ドーナドーナ準拠: scale overshoot で「浮き上がる」感
    パネルの出現と同じ spring 曲線、短尺・小振り */
 .tooltip-pop {
-  animation: tooltip-pop 200ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: tooltip-pop 200ms var(--spring) both;
 }
 
 @keyframes tooltip-pop {
-  0%   { opacity: 0; transform: scale(0.9); }
-  50%  { opacity: 1; transform: scale(1.04); }
-  100% { opacity: 1; transform: scale(1); }
+  0%   { opacity: 0; scale: 0.9; }
+  50%  { opacity: 1; scale: 1.04; }
+  100% { opacity: 1; scale: 1; }
 }
 
 /* タッチデバイス: ツールチップ非表示（tap = action、tooltip は邪魔） */
@@ -184,13 +217,179 @@ body {
   .tooltip-pop { display: none; }
 }
 
-/* アクセシビリティ: 動き抑制設定 */
+/* ============================================
+   浮遊システム（Float System）— River UI のコアビジュアル
+
+   川（背景）の上にすべてが浮いている。
+   ホバーで水面から浮き上がり、シアングローが滲む。
+
+   Token Layer:
+     --glow-cyan-*     グロー強度（subtle / soft / medium）
+     --lift-sm/md       ホバー浮上量
+     --scale-sm/md      ホバー拡大率
+     --ease-float       浮遊トランジション速度
+     --neo-sm/md/lg     ネオブルータリスト影
+
+   Class API:
+     float-water[-delay-N]  水面ボブ（上下揺れ）
+     float-shadow           ボタン・アイコン（影 + ホバーリフト + グロー）
+     float-active           アクティブ状態（neo影 + ホバーリフト + グロー）
+     float-shadow-lg        コンテナ（大影、ホバーリフトなし）
+     card-float             フィードカード（影 + ホバーリフト + グロー + decay対応）
+     click-ripple           押下フィードバック（シアン波紋）
+
+   Usage:
+     <button class="click-ripple float-shadow float-water-delay-1">
+     <div class="card-float" data-decay="true">
+   ============================================ */
+
+/* ── 1. 浮遊アニメーション（水面の上下揺れ） ── */
+@keyframes float-water {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(calc(-1 * var(--float-amplitude))); }
+}
+
+/* nth-child で周期をずらして非同期に（水面の自然さ） */
+.float-water           { animation: float-water 4.0s ease-in-out infinite; }
+.float-water-delay-1   { animation: float-water 3.6s ease-in-out infinite; animation-delay: -1.2s; }
+.float-water-delay-2   { animation: float-water 4.4s ease-in-out infinite; animation-delay: -2.5s; }
+.float-water-delay-3   { animation: float-water 3.8s ease-in-out infinite; animation-delay: -0.7s; }
+
+/* ── 2. 浮遊シャドウ（水面からの浮き + シアン反射光）
+   ホバーでリフト + シアングローが強まる = 水面から浮き上がる表現 ── */
+.float-shadow {
+  box-shadow:
+    0 4px 16px -2px rgba(0, 0, 0, 0.35),
+    0 0 10px -3px var(--glow-cyan-subtle);
+  transition: box-shadow var(--ease-float), translate var(--ease-float), scale var(--ease-float);
+}
+.float-shadow:hover {
+  translate: 0 var(--lift-sm);
+  scale: var(--scale-sm);
+  box-shadow:
+    0 6px 20px -3px rgba(0, 0, 0, 0.4),
+    0 0 20px -2px var(--glow-cyan-medium),
+    0 0 8px -1px var(--glow-cyan-soft);
+}
+/* アクティブ状態: ネオブルータリスト影を保持しつつホバーリフト + シアングロー */
+.float-active {
+  transition: box-shadow var(--ease-float), translate var(--ease-float), scale var(--ease-float);
+}
+.float-active:hover {
+  translate: 0 var(--lift-sm);
+  scale: var(--scale-sm);
+  box-shadow:
+    var(--neo-sm),
+    0 0 20px -2px var(--glow-cyan-medium),
+    0 0 8px -1px var(--glow-cyan-soft);
+}
+
+.float-shadow-lg {
+  box-shadow:
+    0 8px 24px -4px rgba(0, 0, 0, 0.4),
+    0 0 16px -4px var(--glow-cyan-soft);
+}
+
+/* ── 3. カード浮遊 + ホバーリフト ──
+   card-float は全カード（decay / non-decay）に適用。
+   transition を一箇所で統合管理することで、CSS の transition 上書き問題を防ぐ。
+   translate/scale は独立プロパティ → card-pop の transform と競合しない。 */
+
+/* 3a. ベースシャドウ（どんな背景でも浮いて見える） */
+.card-float {
+  box-shadow:
+    0 2px 8px -2px rgba(0, 0, 0, 0.3),
+    0 4px 16px -4px rgba(0, 0, 0, 0.2);
+}
+
+/* 3b. ホバーリフト（前面に浮き上がる + シアン水面グロー） */
+.card-float:hover {
+  translate: 0 var(--lift-md);
+  scale: var(--scale-md);
+  box-shadow:
+    0 8px 24px -4px rgba(0, 0, 0, 0.45),
+    0 4px 12px -2px rgba(0, 0, 0, 0.25),
+    0 0 24px -4px var(--glow-cyan-medium),
+    0 0 8px -1px var(--glow-cyan-subtle);
+}
+
+/* 3c. トランジション統合管理
+   non-decay カード（Scoops 等）: 浮遊プロパティのみ */
+.card-float {
+  transition:
+    translate var(--ease-float),
+    scale var(--ease-float),
+    box-shadow var(--ease-float);
+}
+
+/* decay カード: 浮遊 + ドレイン（filter/opacity）を統合
+   ゆっくり色を失う */
+.card-float[data-decay="true"] {
+  transition:
+    translate var(--ease-float),
+    scale var(--ease-float),
+    box-shadow var(--ease-float),
+    filter var(--ease-decay-slow),
+    opacity var(--ease-decay-slow);
+}
+
+/* decay カード ホバー: ドレインは瞬時復帰、浮遊はそのまま */
+.card-float[data-decay="true"]:hover,
+.card-float[data-decay="true"]:active {
+  transition:
+    translate var(--ease-float),
+    scale var(--ease-float),
+    box-shadow var(--ease-float),
+    filter var(--ease-decay-fast),
+    opacity var(--ease-decay-fast);
+}
+
+/* ── 4. クリックリップル（シアンの光輪が広がる + 沈み込み）
+   ::before でにじんだ光のリングを描画。 ── */
+.click-ripple::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  box-shadow: 0 0 4px 1px rgba(0, 229, 255, 0.4);
+  opacity: 0;
+  pointer-events: none;
+}
+.click-ripple:active {
+  translate: 0 1px;
+}
+.click-ripple:active::before {
+  animation: click-wave 0.4s ease-out forwards;
+}
+
+@keyframes click-wave {
+  0%   { inset: -2px; opacity: 0.6; box-shadow: 0 0 4px 1px rgba(0, 229, 255, 0.4); }
+  30%  { opacity: 0.4; }
+  100% { inset: -6px; opacity: 0; box-shadow: 0 0 7px 2px rgba(0, 229, 255, 0.3); }
+}
+
+/* ── 5. アクセシビリティ: 動き抑制 ── */
 @media (prefers-reduced-motion: reduce) {
+  /* 浮遊アニメーション */
+  .float-water,
+  .float-water-delay-1,
+  .float-water-delay-2,
+  .float-water-delay-3 { animation: none; }
+
+  /* ホバーリフト */
+  .float-shadow:hover { translate: none; scale: none; }
+  .float-active:hover { translate: none; scale: none; }
+  .card-float:hover { translate: none; scale: none; }
+
+  /* クリックリップル */
+  .click-ripple:active::before { animation: none; }
+
+  /* エントリーアニメーション */
   .glitch-text,
   [data-freshness="fresh"],
-  [data-card-enter] {
-    animation: none !important;
-  }
+  [data-card-enter] { animation: none !important; }
+
+  /* ツールチップ */
   .tooltip-pop {
     animation: none !important;
     opacity: 1;

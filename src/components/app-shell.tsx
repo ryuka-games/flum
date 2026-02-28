@@ -28,8 +28,9 @@ export async function AppShell({ children }: { children: ReactNode }) {
       <WallpaperLayer />
 
       <div className="relative z-10 grid min-h-[100svh] grid-cols-[1fr_minmax(0,640px)_1fr]">
-        {/* 左ガター: デスクトップでチャンネルレール */}
-        <div className="hidden md:block">
+        {/* 左ガター: デスクトップでチャンネルレール
+            float-water はラッパーに適用（nav 内の Tooltip が containing block の影響を受けない） */}
+        <div className="float-water hidden md:block">
           <ChannelRail channels={channels ?? []} />
         </div>
 

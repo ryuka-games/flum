@@ -34,13 +34,17 @@ export function ChannelSettingsPanel({
           デスクトップ: right-[72px] top-6（avatar は right-6 top-6, w-10）
           モバイル: left-[60px]（avatar は left-3, w-10）*/}
       <Tooltip content="チャンネル設定" placement="bottom">
-        <button
-          onClick={() => setOpen(!open)}
-          className="fixed right-[64px] top-6 z-50 flex h-8 w-8 items-center justify-center rounded-full bg-river-deep/85 text-[var(--text-secondary)] ring-1 ring-white/[0.06] backdrop-blur-md transition-all hover:bg-river-surface/90 hover:text-int-accent hover:ring-white/[0.10] max-md:left-[52px] max-md:right-auto max-md:top-[calc(12px+env(safe-area-inset-top,0px))]"
-          aria-label="チャンネル設定"
-        >
-          <Settings size={18} />
-        </button>
+        {(ref, props) => (
+          <button
+            ref={ref}
+            {...props}
+            onClick={() => setOpen(!open)}
+            className="click-ripple float-shadow float-water-delay-2 fixed right-[64px] top-6 z-50 flex h-8 w-8 items-center justify-center rounded-full bg-river-deep/85 text-[var(--text-secondary)] backdrop-blur-md hover:text-int-accent max-md:left-[52px] max-md:right-auto max-md:top-[calc(12px+env(safe-area-inset-top,0px))]"
+            aria-label="チャンネル設定"
+          >
+            <Settings size={18} />
+          </button>
+        )}
       </Tooltip>
 
       <SidePanel
@@ -94,13 +98,17 @@ export function ChannelSettingsPanel({
         >
           <input type="hidden" name="id" value={channelId} />
           <Tooltip content="チャンネルを削除">
-            <button
-              type="submit"
-              className="rounded-lg p-1 text-int-danger hover:brightness-110"
-              aria-label="チャンネルを削除"
-            >
-              <Trash2 size={14} />
-            </button>
+            {(ref, props) => (
+              <button
+                ref={ref}
+                {...props}
+                type="submit"
+                className="rounded-lg p-1 text-int-danger hover:brightness-110"
+                aria-label="チャンネルを削除"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
           </Tooltip>
         </form>
       </SidePanel>

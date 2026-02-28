@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useId, cloneElement, isValidElement } from "react";
+import { useState, useId } from "react";
 import {
   useFloating,
   autoUpdate,
@@ -28,7 +28,10 @@ let groupTimeout: ReturnType<typeof setTimeout> | null = null;
 let isGroupOpen = false;
 
 interface TooltipProps {
-  children: React.ReactElement;
+  children: (
+    ref: (node: HTMLElement | null) => void,
+    props: Record<string, unknown>,
+  ) => React.ReactNode;
   content: React.ReactNode;
   placement?: Placement;
   delayMs?: number;
@@ -57,6 +60,7 @@ export function Tooltip({
       }
     },
     placement,
+    transform: false, // top/left で配置（tooltip-pop の transform: scale と競合するため）
     middleware: [offset(8), flip(), shift({ padding: 8 })],
     whileElementsMounted: autoUpdate,
   });
@@ -75,18 +79,12 @@ export function Tooltip({
     role,
   ]);
 
-  // children に ref + props を注入
-  const trigger = isValidElement(children)
-    ? cloneElement(children, {
-        ref: refs.setReference,
-        ...getReferenceProps(),
-        "aria-describedby": open ? id : undefined,
-      } as Record<string, unknown>)
-    : children;
-
   return (
     <>
-      {trigger}
+      {children(refs.setReference, {
+        ...getReferenceProps(),
+        "aria-describedby": open ? id : undefined,
+      })}
 
       {open && (
         <FloatingPortal>

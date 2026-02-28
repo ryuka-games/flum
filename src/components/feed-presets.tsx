@@ -145,26 +145,43 @@ function PresetButton({
     ? "rounded-full px-2.5 py-0.5 text-xs"
     : "rounded-xl px-3 py-1.5 text-sm";
 
-  const btn = (
-      <button
-        onClick={handleClick}
-        disabled={disabled}
-        className={`${baseStyle} transition-colors ${
-          added
-            ? "bg-river-surface text-[var(--text-muted)]"
-            : error
-              ? "bg-int-danger/20 text-int-danger"
-              : "bg-river-surface text-[var(--text-secondary)] hover:bg-river-border hover:text-[var(--text-primary)]"
-        } disabled:cursor-default`}
-      >
-        {added ? "✓" : isPending ? "…" : "+"}{" "}
-        {preset.name}
-      </button>
+  const btnClassName = `${baseStyle} transition-colors ${
+    added
+      ? "bg-river-surface text-[var(--text-muted)]"
+      : error
+        ? "bg-int-danger/20 text-int-danger"
+        : "bg-river-surface text-[var(--text-secondary)] hover:bg-river-border hover:text-[var(--text-primary)]"
+  } disabled:cursor-default`;
+
+  const btnContent = (
+    <>
+      {added ? "✓" : isPending ? "…" : "+"}{" "}
+      {preset.name}
+    </>
   );
 
   // エラー時のみツールチップでエラー内容を表示
   if (error) {
-    return <Tooltip content={error}>{btn}</Tooltip>;
+    return (
+      <Tooltip content={error}>
+        {(ref, props) => (
+          <button
+            ref={ref}
+            {...props}
+            onClick={handleClick}
+            disabled={disabled}
+            className={btnClassName}
+          >
+            {btnContent}
+          </button>
+        )}
+      </Tooltip>
+    );
   }
-  return btn;
+
+  return (
+    <button onClick={handleClick} disabled={disabled} className={btnClassName}>
+      {btnContent}
+    </button>
+  );
 }

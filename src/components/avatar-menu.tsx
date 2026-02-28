@@ -45,7 +45,7 @@ export function AvatarMenu({
       {/* トリガー: アバター */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-river-deep/85 ring-1 ring-white/[0.06] backdrop-blur-md transition-all hover:bg-river-surface/90 hover:ring-white/[0.10]"
+        className="click-ripple relative float-shadow float-water-delay-1 flex h-8 w-8 items-center justify-center rounded-full bg-river-deep/85 backdrop-blur-md"
         aria-label="アカウントメニュー"
         aria-expanded={open}
       >
@@ -64,7 +64,7 @@ export function AvatarMenu({
 
       {/* ドロップダウン */}
       {open && (
-        <div className="absolute right-0 top-full z-30 mt-2 w-64 rounded-2xl border-2 border-neon-pink bg-river-deep p-3 shadow-[4px_4px_0_var(--accent-cyan)] max-md:left-0 max-md:right-auto">
+        <div className="absolute right-0 top-full z-30 mt-2 w-64 rounded-2xl border-2 border-neon-pink bg-river-deep p-3 shadow-neo-lg max-md:left-0 max-md:right-auto">
           {/* ユーザー情報 */}
           <div className="mb-2 flex items-center gap-3 border-b border-river-border pb-2">
             {avatarUrl && (

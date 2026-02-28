@@ -26,17 +26,21 @@ function ChannelRailItem({
 
   return (
     <Tooltip content={label} placement="right">
-      <Link
-        href={href}
-        aria-current={isActive ? "page" : undefined}
-        className={`flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold transition-all ${
-          isActive
-            ? "border-2 border-neon-pink bg-neon-pink/20 text-white shadow-[2px_2px_0_var(--accent-cyan)]"
-            : "bg-river-deep/85 text-[var(--text-secondary)] ring-1 ring-white/[0.06] backdrop-blur-md hover:bg-river-surface/90 hover:text-[var(--text-primary)] hover:ring-white/[0.10]"
-        }`}
-      >
-        {icon ?? initial}
-      </Link>
+      {(ref, props) => (
+        <Link
+          ref={ref}
+          {...props}
+          href={href}
+          aria-current={isActive ? "page" : undefined}
+          className={`click-ripple relative flex h-12 w-12 items-center justify-center rounded-2xl text-sm font-bold ${
+            isActive
+              ? "float-active border-2 border-neon-pink bg-neon-pink/20 text-white shadow-neo-sm"
+              : "float-shadow bg-river-deep/85 text-[var(--text-secondary)] backdrop-blur-md hover:text-[var(--text-primary)]"
+          }`}
+        >
+          {icon ?? initial}
+        </Link>
+      )}
     </Tooltip>
   );
 }
@@ -72,20 +76,24 @@ function CreateChannelButton() {
   return (
     <div ref={ref} className="relative">
       <Tooltip content="チャンネルを作成" placement="right">
-        <button
-          onClick={() => setOpen(!open)}
-          className={`flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold transition-all ${
-            open
-              ? "border-2 border-neon-pink bg-neon-pink/20 text-white"
-              : "bg-river-deep/85 text-[var(--text-secondary)] ring-1 ring-white/[0.06] backdrop-blur-md hover:bg-river-surface/90 hover:text-int-accent hover:ring-white/[0.10]"
-          }`}
-          aria-label="チャンネルを作成"
-        >
-          +
-        </button>
+        {(ref, props) => (
+          <button
+            ref={ref}
+            {...props}
+            onClick={() => setOpen(!open)}
+            className={`click-ripple relative flex h-12 w-12 items-center justify-center rounded-2xl text-lg font-bold ${
+              open
+                ? "border-2 border-neon-pink bg-neon-pink/20 text-white"
+                : "float-shadow bg-river-deep/85 text-[var(--text-secondary)] backdrop-blur-md hover:text-int-accent"
+            }`}
+            aria-label="チャンネルを作成"
+          >
+            +
+          </button>
+        )}
       </Tooltip>
       {open && (
-        <div className="absolute left-full top-0 z-30 ml-3 w-56 rounded-2xl border-2 border-neon-pink bg-river-deep p-3 shadow-[4px_4px_0_var(--accent-cyan)]">
+        <div className="absolute left-full top-0 z-30 ml-3 w-56 rounded-2xl border-2 border-neon-pink bg-river-deep p-3 shadow-neo-lg">
           <form action={handleSubmit}>
             <label htmlFor="rail-new-channel" className="sr-only">
               新しいチャンネル名
@@ -124,7 +132,7 @@ export function ChannelRail({
   return (
     <nav
       aria-label="Channel navigation"
-      className="sticky top-1/2 ml-auto mr-4 flex w-16 -translate-y-1/2 flex-col items-center gap-2 rounded-3xl bg-river-deep/60 py-4 backdrop-blur-lg"
+      className="float-shadow-lg sticky top-1/2 ml-auto mr-4 flex w-16 -translate-y-1/2 flex-col items-center gap-2 rounded-3xl bg-river-deep/60 py-4 backdrop-blur-lg"
     >
       {/* Scoops */}
       <ChannelRailItem

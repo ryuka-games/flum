@@ -31,15 +31,19 @@ export function RefreshButton({
 
   return (
     <Tooltip content="すべてのソースを更新">
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={isPending}
-        className={`transition-colors ${isPending ? "text-int-accent" : "text-[var(--text-muted)] hover:text-int-accent"}`}
-        aria-label="すべてのソースを更新"
-      >
-        <RefreshCw size={18} className={isPending ? "animate-spin" : ""} />
-      </button>
+      {(ref, props) => (
+        <button
+          ref={ref}
+          {...props}
+          type="button"
+          onClick={handleClick}
+          disabled={isPending}
+          className={`transition-colors ${isPending ? "text-int-accent" : "text-[var(--text-muted)] hover:text-int-accent"}`}
+          aria-label="すべてのソースを更新"
+        >
+          <RefreshCw size={18} className={isPending ? "animate-spin" : ""} />
+        </button>
+      )}
     </Tooltip>
   );
 }
