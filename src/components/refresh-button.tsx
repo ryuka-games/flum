@@ -2,8 +2,9 @@
 
 import { useTransition } from "react";
 import { RefreshCw } from "lucide-react";
-import { refreshChannelById } from "@/app/actions/feed";
+import { refreshChannelById, type RefreshResult } from "@/app/actions/feed";
 import { saveAndNotify } from "@/lib/feed/store";
+import { setFeedErrors } from "@/lib/feed/error-store";
 import { Tooltip } from "@/components/tooltip";
 
 export function RefreshButton({
@@ -19,9 +20,12 @@ export function RefreshButton({
     window.dispatchEvent(new Event("flowline:start"));
     startTransition(async () => {
       try {
-        const fetched = await refreshChannelById(channelId).catch(() => []);
-        if (fetched.length > 0) {
-          await saveAndNotify(fetched, feedSourceIds);
+        const result = await refreshChannelById(channelId).catch(
+          (): RefreshResult => ({ items: [], errors: {}, succeededSourceIds: [] }),
+        );
+        setFeedErrors(channelId, result.errors, result.succeededSourceIds);
+        if (result.items.length > 0) {
+          await saveAndNotify(result.items, feedSourceIds);
         }
       } finally {
         window.dispatchEvent(new Event("flowline:done"));

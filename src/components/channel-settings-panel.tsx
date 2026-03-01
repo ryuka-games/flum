@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Settings, Trash2 } from "lucide-react";
+import { useState, useSyncExternalStore } from "react";
+import { Settings, Trash2, AlertTriangle } from "lucide-react";
+import {
+  getFeedErrorsSnapshot,
+  subscribeFeedErrors,
+} from "@/lib/feed/error-store";
 import { deleteChannel } from "@/app/actions/channel";
 import { AddFeedForm } from "@/components/add-feed-form";
 import { PresetChips } from "@/components/feed-presets";
@@ -9,6 +13,8 @@ import { DeleteFeedSourceButton } from "@/components/delete-feed-source";
 import { WallpaperPicker } from "@/components/wallpaper-picker";
 import { SidePanel } from "@/components/side-panel";
 import { Tooltip } from "@/components/tooltip";
+
+const EMPTY_ERRORS: Record<string, string> = {};
 
 /* ─────────────────────────────────────────────
    ChannelSettingsPanel — ⚙ ボタン + 右ガターパネル
@@ -27,6 +33,11 @@ export function ChannelSettingsPanel({
   existingUrls: string[];
 }) {
   const [open, setOpen] = useState(false);
+  const feedErrors = useSyncExternalStore(
+    subscribeFeedErrors,
+    () => getFeedErrorsSnapshot(channelId),
+    () => EMPTY_ERRORS,
+  );
 
   return (
     <>
@@ -70,18 +81,43 @@ export function ChannelSettingsPanel({
               登録済みソース
             </p>
             <div className="flex flex-wrap gap-2">
-              {sources.map((source) => (
-                <div
-                  key={source.id}
-                  className="flex items-center gap-1 rounded-full bg-river-surface px-2.5 py-1 text-xs text-[var(--text-secondary)]"
-                >
-                  <span className="max-w-[160px] truncate">{source.name}</span>
-                  <DeleteFeedSourceButton
-                    sourceId={source.id}
-                    channelId={channelId}
-                  />
-                </div>
-              ))}
+              {sources.map((source) => {
+                const error = feedErrors[source.id];
+                const chip = (
+                  <div
+                    key={source.id}
+                    className={`flex items-center gap-1 rounded-full bg-river-surface px-2.5 py-1 text-xs text-[var(--text-secondary)] ${error ? "ring-1 ring-amber-400/50" : ""}`}
+                  >
+                    {error && (
+                      <AlertTriangle
+                        size={12}
+                        className="shrink-0 text-amber-400"
+                      />
+                    )}
+                    <span className="max-w-[160px] truncate">
+                      {source.name}
+                    </span>
+                    <DeleteFeedSourceButton
+                      sourceId={source.id}
+                      channelId={channelId}
+                    />
+                  </div>
+                );
+
+                if (error) {
+                  return (
+                    <Tooltip key={source.id} content={error} placement="bottom">
+                      {(ref, props) => (
+                        <div ref={ref} {...props}>
+                          {chip}
+                        </div>
+                      )}
+                    </Tooltip>
+                  );
+                }
+
+                return chip;
+              })}
             </div>
           </section>
         )}

@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Pin } from "lucide-react";
 import { createChannel } from "@/app/actions/channel";
 import { Tooltip } from "@/components/tooltip";
+import {
+  hasChannelErrors,
+  subscribeFeedErrors,
+} from "@/lib/feed/error-store";
 
 /* ─────────────────────────────────────────────
    ChannelRailItem — アクティブ状態判定の薄い Client ラッパー
@@ -15,14 +19,22 @@ function ChannelRailItem({
   href,
   label,
   icon,
+  channelId,
 }: {
   href: string;
   label: string;
   icon?: React.ReactNode;
+  channelId?: string;
 }) {
   const pathname = usePathname();
   const isActive = pathname === href || pathname.startsWith(href + "/");
   const initial = label.charAt(0).toUpperCase();
+
+  const hasError = useSyncExternalStore(
+    subscribeFeedErrors,
+    () => (channelId ? hasChannelErrors(channelId) : false),
+    () => false,
+  );
 
   return (
     <Tooltip content={label} placement="right">
@@ -39,6 +51,9 @@ function ChannelRailItem({
           }`}
         >
           {icon ?? initial}
+          {hasError && (
+            <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-river-deep bg-amber-400" />
+          )}
         </Link>
       )}
     </Tooltip>
@@ -148,6 +163,7 @@ export function ChannelRail({
           key={ch.id}
           href={`/channels/${ch.id}`}
           label={ch.name}
+          channelId={ch.id}
         />
       ))}
       <div className="my-1 h-px w-8 bg-river-border/50" />

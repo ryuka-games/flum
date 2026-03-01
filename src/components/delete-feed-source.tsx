@@ -2,6 +2,7 @@
 
 import { deleteFeedSource } from "@/app/actions/feed";
 import { deleteItemsBySourceId } from "@/lib/feed/store";
+import { clearFeedError } from "@/lib/feed/error-store";
 
 export function DeleteFeedSourceButton({
   sourceId,
@@ -13,6 +14,7 @@ export function DeleteFeedSourceButton({
   const handleAction = async (formData: FormData) => {
     await deleteFeedSource(formData);
     await deleteItemsBySourceId(sourceId);
+    clearFeedError(channelId, sourceId);
   };
 
   return (

@@ -141,15 +141,23 @@ export async function deleteFeedSource(formData: FormData) {
   revalidatePath(`/channels/${channelId}`);
 }
 
-/** チャンネルの全ソースをフェッチして items を返す */
+export type RefreshResult = {
+  items: FeedItemPayload[];
+  errors: Record<string, string>; // { [feedSourceId]: errorMessage }
+  succeededSourceIds: string[];
+};
+
+/** チャンネルの全ソースをフェッチして items とエラーを返す */
 export async function refreshChannelById(
   channelId: string,
-): Promise<FeedItemPayload[]> {
+): Promise<RefreshResult> {
+  const empty: RefreshResult = { items: [], errors: {}, succeededSourceIds: [] };
+
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return [];
+  if (!user) return empty;
 
   // チャンネルの全ソースを取得（条件付きヘッダー含む）
   const { data: sources } = await supabase
@@ -157,9 +165,11 @@ export async function refreshChannelById(
     .select("id, url, etag, last_modified_header")
     .eq("channel_id", channelId);
 
-  if (!sources || sources.length === 0) return [];
+  if (!sources || sources.length === 0) return empty;
 
   const allItems: FeedItemPayload[] = [];
+  const errors: Record<string, string> = {};
+  const succeededSourceIds: string[] = [];
 
   // 全ソースを並列フェッチ
   await Promise.allSettled(
@@ -168,7 +178,12 @@ export async function refreshChannelById(
         etag: source.etag,
         lastModified: source.last_modified_header,
       });
-      if (!result.success) return;
+      if (!result.success) {
+        errors[source.id] = result.error;
+        return;
+      }
+
+      succeededSourceIds.push(source.id);
 
       // 304 Not Modified: フェッチ日時だけ更新
       if ("notModified" in result) {
@@ -210,5 +225,5 @@ export async function refreshChannelById(
     }),
   );
 
-  return allItems;
+  return { items: allItems, errors, succeededSourceIds };
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore, useTransition } from "react";
-import { refreshChannelById } from "@/app/actions/feed";
+import { refreshChannelById, type RefreshResult } from "@/app/actions/feed";
 import {
   saveAndNotify,
   getItemsBySourceIds,
@@ -9,6 +9,7 @@ import {
   getItemsSnapshot,
   subscribeFeedItems,
 } from "@/lib/feed/store";
+import { setFeedErrors } from "@/lib/feed/error-store";
 import { FeedItemList } from "@/components/feed-item-list";
 import { isExpired } from "@/lib/decay";
 
@@ -55,9 +56,13 @@ export function ChannelFeedView({
 
       // バックグラウンドで最新をフェッチ（キャッシュの有無に関わらず）
       startTransition(async () => {
-        const fetched = await refreshChannelById(channelId).catch(() => []);
-        if (cancelled || fetched.length === 0) return;
-        await saveAndNotify(fetched, feedSourceIds);
+        const result = await refreshChannelById(channelId).catch(
+          (): RefreshResult => ({ items: [], errors: {}, succeededSourceIds: [] }),
+        );
+        if (cancelled) return;
+        setFeedErrors(channelId, result.errors, result.succeededSourceIds);
+        if (result.items.length === 0) return;
+        await saveAndNotify(result.items, feedSourceIds);
       });
     }
 
@@ -74,9 +79,12 @@ export function ChannelFeedView({
 
     const id = setInterval(() => {
       startTransition(async () => {
-        const fetched = await refreshChannelById(channelId).catch(() => []);
-        if (fetched.length > 0) {
-          await saveAndNotify(fetched, feedSourceIds);
+        const result = await refreshChannelById(channelId).catch(
+          (): RefreshResult => ({ items: [], errors: {}, succeededSourceIds: [] }),
+        );
+        setFeedErrors(channelId, result.errors, result.succeededSourceIds);
+        if (result.items.length > 0) {
+          await saveAndNotify(result.items, feedSourceIds);
         }
       });
     }, REFRESH_INTERVAL_MS);
