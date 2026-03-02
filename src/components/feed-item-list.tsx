@@ -15,7 +15,7 @@ const STAGE_LABELS: Record<FreshnessStage, string> = {
   stale: "まもなく消失",
 };
 
-type FeedItemData = {
+export type FeedItemData = {
   id: string;
   title: string;
   url: string;
@@ -23,6 +23,8 @@ type FeedItemData = {
   published_at: string | null;
   feed_source_id: string;
   og_image: string | null;
+  favoriteId?: string;
+  channelName?: string;
 };
 
 function TimeGroupDivider({ label }: { label: string }) {
@@ -39,12 +41,18 @@ export function FeedItemList({
   favoritedUrls,
   channelName,
   returnPath,
+  selectedIndex,
+  noDecay,
+  showChannelLabel,
 }: {
   items: FeedItemData[];
   sourceNameMap: Record<string, string>;
   favoritedUrls: string[];
   channelName: string;
   returnPath: string;
+  selectedIndex?: number | null;
+  noDecay?: boolean;
+  showChannelLabel?: boolean;
 }) {
   const now = useClientNow();
 
@@ -66,15 +74,17 @@ export function FeedItemList({
   const elements: React.ReactNode[] = [];
 
   items.forEach((item, i) => {
-    const stage = now
-      ? getFreshnessStage(item.published_at, now)
-      : "fresh" as FreshnessStage;
+    if (!noDecay) {
+      const stage = now
+        ? getFreshnessStage(item.published_at, now)
+        : "fresh" as FreshnessStage;
 
-    if (stage !== prevStage) {
-      elements.push(
-        <TimeGroupDivider key={`divider-${stage}`} label={STAGE_LABELS[stage]} />
-      );
-      prevStage = stage;
+      if (stage !== prevStage) {
+        elements.push(
+          <TimeGroupDivider key={`divider-${stage}`} label={STAGE_LABELS[stage]} />
+        );
+        prevStage = stage;
+      }
     }
 
     elements.push(
@@ -84,13 +94,17 @@ export function FeedItemList({
         url={item.url}
         sourceName={sourceNameMap[item.feed_source_id] ?? ""}
         publishedAt={item.published_at}
-        channelName={channelName}
-        hideChannelLabel
+        channelName={item.channelName ?? channelName}
+        hideChannelLabel={!showChannelLabel}
         returnPath={returnPath}
         isFavorited={favoritedUrls.includes(item.url)}
+        favoriteId={item.favoriteId}
         ogImage={item.og_image ?? undefined}
         thumbnailUrl={item.thumbnail_url ?? undefined}
         enterIndex={i < ENTER_ANIM_COUNT ? i : undefined}
+        isSelected={selectedIndex === i}
+        itemIndex={i}
+        noDecay={noDecay}
       />
     );
   });

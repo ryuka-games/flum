@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { Pin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
-import { FeedItem } from "@/components/feed-item";
+import { ScoopsFeedView } from "@/components/scoops-feed-view";
 
 export default async function ScoopsPage({
   searchParams,
@@ -72,35 +71,7 @@ export default async function ScoopsPage({
         )}
       </section>
 
-      <div>
-        {favorites && favorites.length > 0 ? (
-          <div className="mx-auto flex w-full max-w-xl flex-col gap-2 px-2">
-            {favorites.map((fav) => (
-              <FeedItem
-                key={fav.id}
-                title={fav.title}
-                url={fav.url}
-                sourceName={fav.source_name ?? ""}
-                publishedAt={fav.published_at}
-                channelName={fav.channel_name ?? undefined}
-                favoriteId={fav.id}
-                ogImage={fav.og_image ?? undefined}
-                thumbnailUrl={fav.thumbnail_url ?? undefined}
-                noDecay
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-secondary)]">
-            <div className="text-center">
-              <p className="mb-2">Scoop した記事はまだありません</p>
-              <p className="text-sm text-[var(--text-secondary)]">
-                フィードの <Pin size={14} className="inline text-neon-pink" /> をクリックして流れから掬い上げましょう
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
+      <ScoopsFeedView scoops={favorites ?? []} />
     </>
   );
 }

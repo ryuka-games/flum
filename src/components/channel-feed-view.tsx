@@ -11,6 +11,8 @@ import {
 } from "@/lib/feed/store";
 import { setFeedErrors } from "@/lib/feed/error-store";
 import { FeedItemList } from "@/components/feed-item-list";
+import { KeyboardHelp } from "@/components/keyboard-help";
+import { useKeyboardNav } from "@/lib/use-keyboard-nav";
 import { isExpired } from "@/lib/decay";
 
 const REFRESH_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
@@ -20,13 +22,13 @@ export function ChannelFeedView({
   channelName,
   feedSourceIds,
   sourceNameMap,
-  scoopedUrls,
+  scoopMap,
 }: {
   channelId: string;
   channelName: string;
   feedSourceIds: string[];
   sourceNameMap: Record<string, string>;
-  scoopedUrls: string[];
+  scoopMap: Record<string, string>;
 }) {
   const [isRefreshing, startTransition] = useTransition();
 
@@ -107,6 +109,18 @@ export function ChannelFeedView({
       og_image: item.ogImage,
     }));
 
+  const returnPath = `/channels/${channelId}`;
+
+  const { selectedIndex, helpOpen, setHelpOpen } = useKeyboardNav({
+    items: feedItems,
+    channelId,
+    feedSourceIds,
+    scoopMap,
+    sourceNameMap,
+    channelName,
+    returnPath,
+  });
+
   if (isRefreshing && feedItems.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center py-20 text-[var(--text-secondary)]">
@@ -116,12 +130,16 @@ export function ChannelFeedView({
   }
 
   return (
-    <FeedItemList
-      items={feedItems}
-      sourceNameMap={sourceNameMap}
-      favoritedUrls={scoopedUrls}
-      channelName={channelName}
-      returnPath={`/channels/${channelId}`}
-    />
+    <>
+      <FeedItemList
+        items={feedItems}
+        sourceNameMap={sourceNameMap}
+        favoritedUrls={Object.keys(scoopMap)}
+        channelName={channelName}
+        returnPath={returnPath}
+        selectedIndex={selectedIndex}
+      />
+      <KeyboardHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+    </>
   );
 }

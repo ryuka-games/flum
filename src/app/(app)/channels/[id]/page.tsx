@@ -36,11 +36,14 @@ export default async function ChannelPage({
     sourceNameMap[s.id] = s.name;
   }
 
-  // お気に入り済み URL 一覧
+  // お気に入り済み URL → Scoop ID マップ
   const { data: favorites } = await supabase
     .from("scoops")
-    .select("url");
-  const scoopedUrls = (favorites ?? []).map((f) => f.url);
+    .select("id, url");
+  const scoopMap: Record<string, string> = {};
+  for (const f of favorites ?? []) {
+    scoopMap[f.url] = f.id;
+  }
 
   return (
     <>
@@ -58,7 +61,7 @@ export default async function ChannelPage({
           channelName={channel.name}
           feedSourceIds={feedSourceIds}
           sourceNameMap={sourceNameMap}
-          scoopedUrls={scoopedUrls}
+          scoopMap={scoopMap}
         />
       ) : (
         <FeedPresets channelId={channel.id} existingUrls={existingUrls} />

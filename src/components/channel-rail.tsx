@@ -10,6 +10,7 @@ import {
   hasChannelErrors,
   subscribeFeedErrors,
 } from "@/lib/feed/error-store";
+import { useAppKeyboardNav } from "@/lib/use-app-keyboard-nav";
 
 /* ─────────────────────────────────────────────
    ChannelRailItem — アクティブ状態判定の薄い Client ラッパー
@@ -144,6 +145,8 @@ export function ChannelRail({
 }: {
   channels: { id: string; name: string }[];
 }) {
+  useAppKeyboardNav({ channels });
+
   return (
     <nav
       aria-label="Channel navigation"

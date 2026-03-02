@@ -302,8 +302,9 @@ body {
     0 4px 16px -4px rgba(0, 0, 0, 0.2);
 }
 
-/* 3b. ホバーリフト（前面に浮き上がる + シアン水面グロー） */
-.card-float:hover {
+/* 3b. ホバーリフト / キーボード選択（前面に浮き上がる + シアン水面グロー） */
+.card-float:hover,
+.card-float[data-selected] {
   translate: 0 var(--lift-md);
   scale: var(--scale-md);
   box-shadow:
@@ -334,9 +335,10 @@ body {
     opacity var(--ease-decay-slow);
 }
 
-/* decay カード ホバー: ドレインは瞬時復帰、浮遊はそのまま */
+/* decay カード ホバー / キーボード選択: ドレインは瞬時復帰、浮遊はそのまま */
 .card-float[data-decay="true"]:hover,
-.card-float[data-decay="true"]:active {
+.card-float[data-decay="true"]:active,
+.card-float[data-decay="true"][data-selected] {
   transition:
     translate var(--ease-float),
     scale var(--ease-float),

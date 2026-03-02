@@ -34,6 +34,8 @@ export function FeedItem({
   noDecay,
   enterIndex,
   hideChannelLabel,
+  isSelected,
+  itemIndex,
 }: {
   title: string;
   url: string;
@@ -48,6 +50,8 @@ export function FeedItem({
   noDecay?: boolean;
   enterIndex?: number;
   hideChannelLabel?: boolean;
+  isSelected?: boolean;
+  itemIndex?: number;
 }) {
   const now = useClientNow();
   const imageUrl = ogImage ?? thumbnailUrl;
@@ -56,10 +60,12 @@ export function FeedItem({
 
   return (
     <div
-      className="card-float group relative rounded-2xl bg-[var(--glass-bg)] backdrop-blur-md"
+      className={`card-float group relative rounded-2xl bg-[var(--glass-bg)] backdrop-blur-md scroll-mt-4${isSelected ? " ring-1 ring-int-accent/60" : ""}`}
       data-decay={decay ? "true" : undefined}
       data-freshness={decay?.freshness ?? "fresh"}
       data-card-enter={enterIndex != null ? "" : undefined}
+      data-selected={isSelected ? "" : undefined}
+      data-feed-item-index={itemIndex ?? undefined}
       style={
         {
           ...(decay && {
