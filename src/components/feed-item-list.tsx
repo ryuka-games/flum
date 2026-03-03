@@ -23,6 +23,8 @@ export type FeedItemData = {
   published_at: string | null;
   feed_source_id: string;
   og_image: string | null;
+  og_description: string | null;
+  content: string | null;
   favoriteId?: string;
   channelName?: string;
 };
@@ -100,6 +102,8 @@ export function FeedItemList({
         isFavorited={favoritedUrls.includes(item.url)}
         favoriteId={item.favoriteId}
         ogImage={item.og_image ?? undefined}
+        ogDescription={item.og_description ?? undefined}
+        content={item.content ?? undefined}
         thumbnailUrl={item.thumbnail_url ?? undefined}
         enterIndex={i < ENTER_ANIM_COUNT ? i : undefined}
         isSelected={selectedIndex === i}

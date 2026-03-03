@@ -107,6 +107,8 @@ export function ChannelFeedView({
       published_at: item.publishedAt,
       feed_source_id: item.feedSourceId,
       og_image: item.ogImage,
+      og_description: item.ogDescription,
+      content: item.content,
     }));
 
   const returnPath = `/channels/${channelId}`;

@@ -26,6 +26,8 @@ export function ScoopsFeedView({ scoops }: { scoops: ScoopData[] }) {
     published_at: s.published_at,
     feed_source_id: s.source_name ?? "", // ソース名をキーに使用
     og_image: s.og_image,
+    og_description: null,
+    content: null,
     favoriteId: s.id,
     channelName: s.channel_name ?? undefined,
   }));

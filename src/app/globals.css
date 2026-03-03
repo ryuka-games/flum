@@ -115,24 +115,41 @@ body {
    重要: transition は card-float と統合管理（CSS の transition はマージされないため）
    decay 単体の transition はここに書かない → .card-float セクションで一括定義 */
 
-[data-decay="true"] {
+/* Decay filter/opacity は card-float ではなく .card-content に適用
+   → box-shadow（鮮度影）は filter の影響を受けず常に鮮明 */
+[data-decay="true"] > .card-content {
+  filter: var(--decay-filter, none);
   opacity: var(--decay-opacity, 1);
-  /* transition は .card-float / .card-float[data-decay] で統合管理 */
+  /* transition は .card-float[data-decay] > .card-content で統合管理 */
 }
 
 /* ホバー / タップ: 瞬時復帰 = Splatoon の「色が戻る」快感 */
-[data-decay="true"]:hover,
-[data-decay="true"]:active {
+[data-decay="true"]:hover > .card-content,
+[data-decay="true"]:active > .card-content {
   filter: none !important;
   opacity: 1 !important;
-  /* transition は .card-float[data-decay]:hover で統合管理 */
+}
+
+/* キーボード選択: 同様に瞬時復帰 */
+.card-float[data-decay="true"][data-selected] > .card-content {
+  filter: none !important;
+  opacity: 1 !important;
 }
 
 /* モバイル: ホバーなし端末では filter 無効・opacity のみで鮮度表現 */
 @media (hover: none) {
-  [data-decay="true"] {
+  [data-decay="true"] > .card-content {
     filter: none !important;
     opacity: max(var(--decay-opacity, 1), 0.6);
+  }
+  /* タップで :hover が発火しカードが浮き上がる + グロー追加を防止 */
+  .card-float:hover:not([data-selected]) {
+    translate: none;
+    scale: none;
+    box-shadow:
+      3px 3px 0 var(--decay-shadow, var(--accent-pink)),
+      0 2px 8px -2px rgba(0, 0, 0, 0.3),
+      0 4px 16px -4px rgba(0, 0, 0, 0.2);
   }
 }
 
@@ -295,14 +312,15 @@ body {
    transition を一箇所で統合管理することで、CSS の transition 上書き問題を防ぐ。
    translate/scale は独立プロパティ → card-pop の transform と競合しない。 */
 
-/* 3a. ベースシャドウ（どんな背景でも浮いて見える） */
+/* 3a. ベースシャドウ（ネオブルータリスト影で鮮度を常時表示） */
 .card-float {
   box-shadow:
+    3px 3px 0 var(--decay-shadow, var(--accent-pink)),
     0 2px 8px -2px rgba(0, 0, 0, 0.3),
     0 4px 16px -4px rgba(0, 0, 0, 0.2);
 }
 
-/* 3b. ホバーリフト / キーボード選択（前面に浮き上がる + シアン水面グロー） */
+/* 3b. ホバーリフト / キーボード選択（浮き上がり + シアングロー追加） */
 .card-float:hover,
 .card-float[data-selected] {
   translate: 0 var(--lift-md);
@@ -324,25 +342,26 @@ body {
     box-shadow var(--ease-float);
 }
 
-/* decay カード: 浮遊 + ドレイン（filter/opacity）を統合
-   ゆっくり色を失う */
+/* decay カード: card-float は浮遊のみ、ドレインは .card-content で管理 */
 .card-float[data-decay="true"] {
   transition:
     translate var(--ease-float),
     scale var(--ease-float),
-    box-shadow var(--ease-float),
+    box-shadow var(--ease-float);
+}
+
+/* decay ドレイン: ゆっくり色を失う */
+.card-float[data-decay="true"] > .card-content {
+  transition:
     filter var(--ease-decay-slow),
     opacity var(--ease-decay-slow);
 }
 
-/* decay カード ホバー / キーボード選択: ドレインは瞬時復帰、浮遊はそのまま */
-.card-float[data-decay="true"]:hover,
-.card-float[data-decay="true"]:active,
-.card-float[data-decay="true"][data-selected] {
+/* decay カード ホバー / キーボード選択: ドレインは瞬時復帰 */
+.card-float[data-decay="true"]:hover > .card-content,
+.card-float[data-decay="true"]:active > .card-content,
+.card-float[data-decay="true"][data-selected] > .card-content {
   transition:
-    translate var(--ease-float),
-    scale var(--ease-float),
-    box-shadow var(--ease-float),
     filter var(--ease-decay-fast),
     opacity var(--ease-decay-fast);
 }
@@ -364,9 +383,24 @@ body {
 .click-ripple:active::before {
   animation: click-wave 0.4s ease-out forwards;
 }
-/* カードリンククリック時のみカード全体を沈み込ませる */
-.card-float:has(> .click-ripple:active) {
+
+/* ── 4b. カード専用リップル
+   カード内の click-ripple は overflow-hidden の内側にあるため
+   ::before がクリップされる。card-float::after で外側に波紋を出す。 ── */
+.card-float::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  box-shadow: 0 0 4px 1px rgba(0, 229, 255, 0.4);
+  opacity: 0;
+  pointer-events: none;
+}
+.card-float:has(.click-ripple:active) {
   translate: 0 1px;
+}
+.card-float:has(.click-ripple:active)::after {
+  animation: click-wave 0.4s ease-out forwards;
 }
 
 @keyframes click-wave {
@@ -389,7 +423,8 @@ body {
   .card-float:hover { translate: none; scale: none; }
 
   /* クリックリップル */
-  .click-ripple:active::before { animation: none; }
+  .click-ripple:active::before,
+  .card-float:has(.click-ripple:active)::after { animation: none; }
 
   /* エントリーアニメーション */
   .glitch-text,
@@ -565,6 +600,36 @@ body {
     rgba(200, 210, 255, 0.10) 70%,
     transparent 95%
   );
+}
+
+/* --- プレビューポップオーバー入場（tooltip-pop の派生、右から滑り込み） --- */
+.preview-pop {
+  animation: preview-pop 200ms var(--spring) both;
+}
+
+@keyframes preview-pop {
+  0%   { opacity: 0; scale: 0.95; translate: -8px 0; }
+  50%  { opacity: 1; scale: 1.02; }
+  100% { opacity: 1; scale: 1; translate: 0 0; }
+}
+
+@media (hover: none) {
+  .preview-pop { display: none; }
+}
+
+/* --- カードスワイプ遷移（表裏の切り替え） --- */
+.card-slide-track {
+  transition: transform 0.25s var(--spring);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview-pop {
+    animation: none !important;
+    opacity: 1;
+  }
+  .card-slide-track {
+    transition: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -15,6 +15,7 @@ const SECTIONS: ShortcutSection[] = [
       { key: "k", description: "前のアイテム" },
       { key: "o / Enter", description: "新タブで開く" },
       { key: "s", description: "Scoop トグル" },
+      { key: "p", description: "プレビュー表示" },
       { key: "r", description: "リフレッシュ" },
     ],
   },

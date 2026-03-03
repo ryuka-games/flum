@@ -46,9 +46,12 @@ export function setFeedErrors(
 export function clearFeedError(channelId: string, sourceId: string): void {
   const errors = errorsByChannel[channelId];
   if (!errors || !(sourceId in errors)) return;
-  delete errors[sourceId];
-  if (Object.keys(errors).length === 0) {
+  // ミュートせず新オブジェクトを作成（snapshotCache の参照比較を正しく動かすため）
+  const { [sourceId]: _, ...rest } = errors;
+  if (Object.keys(rest).length === 0) {
     delete errorsByChannel[channelId];
+  } else {
+    errorsByChannel[channelId] = rest;
   }
   notify();
 }
@@ -90,12 +93,21 @@ export function hasChannelErrors(channelId: string): boolean {
 }
 
 /** getSnapshot for hasChannelErrors（チャンネルIDリスト → エラーありIDセット） */
+let cachedErrorIdSet: Set<string> = new Set();
+let cachedErrorIdKey = "";
+
 export function getChannelErrorIdsSnapshot(
   channelIds: string[],
 ): Set<string> {
-  const set = new Set<string>();
+  // エラーありチャンネルIDをソートした文字列で比較（参照安定化）
+  const ids: string[] = [];
   for (const id of channelIds) {
-    if (hasChannelErrors(id)) set.add(id);
+    if (hasChannelErrors(id)) ids.push(id);
   }
-  return set;
+  const key = ids.join(",");
+  if (key !== cachedErrorIdKey) {
+    cachedErrorIdKey = key;
+    cachedErrorIdSet = new Set(ids);
+  }
+  return cachedErrorIdSet;
 }

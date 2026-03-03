@@ -25,7 +25,24 @@ function isInputFocused(): boolean {
 
 function scrollToSelected(index: number) {
   const el = document.querySelector(`[data-feed-item-index="${index}"]`);
-  el?.scrollIntoView({ block: "start", behavior: "smooth" });
+  if (!el) return;
+
+  const rect = el.getBoundingClientRect();
+  const vh = window.innerHeight;
+  const margin = 60;
+
+  // 既に快適ゾーン内なら動かさない
+  if (rect.top >= margin && rect.bottom <= vh - margin) return;
+
+  // 快適ゾーン外なら上から 25% の位置へ
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+
+  window.scrollTo({
+    top: window.scrollY + rect.top - vh * 0.25,
+    behavior: prefersReducedMotion ? "auto" : "smooth",
+  });
 }
 
 /** 画面内に見えている最初のカードの index を返す。見つからなければ 0 */
@@ -155,6 +172,13 @@ export function useKeyboardNav(options: UseKeyboardNavOptions) {
               window.dispatchEvent(new Event("flowline:done"));
             }
           })();
+          break;
+        }
+        case "p": {
+          if (sel === null || !items[sel]) return;
+          e.preventDefault();
+          const el = document.querySelector(`[data-feed-item-index="${sel}"]`);
+          el?.dispatchEvent(new CustomEvent("toggle-preview", { bubbles: false }));
           break;
         }
         case "?": {
