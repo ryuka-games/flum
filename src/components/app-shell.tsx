@@ -4,7 +4,7 @@ import { FlowLine } from "@/components/flow-line";
 import { WallpaperLayer } from "@/components/wallpaper-layer";
 import { ChannelRail } from "@/components/channel-rail";
 import { AvatarMenu } from "@/components/avatar-menu";
-import { MobileChannelFab } from "@/components/mobile-channel-fab";
+import { MobileMenuFab } from "@/components/mobile-menu-fab";
 
 /* ─────────────────────────────────────────────
    AppShell — CSS Grid 3カラムレイアウト
@@ -30,12 +30,12 @@ export async function AppShell({ children }: { children: ReactNode }) {
       <div className="relative z-10 grid min-h-[100svh] grid-cols-1 md:grid-cols-[1fr_minmax(0,640px)_1fr]">
         {/* 左ガター: デスクトップでチャンネルレール
             float-water はラッパーに適用（nav 内の Tooltip が containing block の影響を受けない） */}
-        <div className="float-water hidden md:block">
+        <div className="float-water relative z-20 hidden md:block">
           <ChannelRail channels={channels ?? []} />
         </div>
 
         {/* 中央: メインコンテンツ */}
-        <main className="flex min-w-0 flex-col pt-6 pb-[calc(104px+env(safe-area-inset-bottom,0px))] md:pb-0">
+        <main className="flex min-w-0 flex-col pt-6 pb-[calc(72px+env(safe-area-inset-bottom,0px))] md:pb-0">
           {children}
         </main>
 
@@ -44,8 +44,12 @@ export async function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       {/* Floating 要素（Grid の外、fixed） */}
-      {user && <AvatarMenu user={user} />}
-      <MobileChannelFab channels={channels ?? []} />
+      {/* デスクトップ: アバターメニュー */}
+      <div className="hidden md:block">
+        {user && <AvatarMenu user={user} />}
+      </div>
+      {/* モバイル: 統合メニュー FAB */}
+      <MobileMenuFab user={user} channels={channels ?? []} />
     </>
   );
 }

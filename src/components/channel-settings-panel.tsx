@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
-import { Settings, Trash2, AlertTriangle } from "lucide-react";
+import { useState, useEffect, useOptimistic, useTransition, useSyncExternalStore } from "react";
+import { Settings, Trash2, AlertTriangle, X } from "lucide-react";
 import {
   getFeedErrorsSnapshot,
   subscribeFeedErrors,
 } from "@/lib/feed/error-store";
 import { deleteChannel } from "@/app/actions/channel";
+import { updateKeywordFilters } from "@/app/actions/feed";
 import { AddFeedForm } from "@/components/add-feed-form";
 import { PresetChips } from "@/components/feed-presets";
 import { DeleteFeedSourceButton } from "@/components/delete-feed-source";
@@ -26,13 +27,32 @@ export function ChannelSettingsPanel({
   channelName,
   sources,
   existingUrls,
+  keywordFilters,
 }: {
   channelId: string;
   channelName: string;
   sources: { id: string; name: string; url: string }[];
   existingUrls: string[];
+  keywordFilters: string[];
 }) {
   const [open, setOpen] = useState(false);
+
+  // モバイルメニューからの open イベントを受信
+  useEffect(() => {
+    function handleOpen() {
+      setOpen(true);
+    }
+    window.addEventListener("open-channel-settings", handleOpen);
+    return () => window.removeEventListener("open-channel-settings", handleOpen);
+  }, []);
+
+  // 開閉をモバイルメニューに通知
+  useEffect(() => {
+    window.dispatchEvent(
+      new Event(open ? "channel-settings-opened" : "channel-settings-closed"),
+    );
+  }, [open]);
+
   const feedErrors = useSyncExternalStore(
     subscribeFeedErrors,
     () => getFeedErrorsSnapshot(channelId),
@@ -50,7 +70,7 @@ export function ChannelSettingsPanel({
             ref={ref}
             {...props}
             onClick={() => setOpen(!open)}
-            className="click-ripple float-shadow float-water-delay-2 fixed right-[64px] top-6 z-50 flex h-8 w-8 items-center justify-center rounded-full bg-river-deep/85 text-[var(--text-secondary)] backdrop-blur-md hover:text-int-accent max-md:left-[52px] max-md:right-auto max-md:top-[calc(12px+env(safe-area-inset-top,0px))]"
+            className="click-ripple float-shadow float-water-delay-2 fixed right-[64px] top-6 z-50 hidden h-8 w-8 items-center justify-center rounded-full bg-river-deep/85 text-[var(--text-secondary)] backdrop-blur-md hover:text-int-accent md:flex"
             aria-label="チャンネル設定"
           >
             <Settings size={18} />
@@ -122,6 +142,12 @@ export function ChannelSettingsPanel({
           </section>
         )}
 
+        {/* 水門（キーワードフィルタ） */}
+        <KeywordFilterSection
+          channelId={channelId}
+          initialKeywords={keywordFilters}
+        />
+
         {/* 壁紙 */}
         <section className="mb-4">
           <WallpaperPicker channelId={channelId} />
@@ -149,5 +175,95 @@ export function ChannelSettingsPanel({
         </form>
       </SidePanel>
     </>
+  );
+}
+
+/* ─────────────────────────────────────────────
+   KeywordFilterSection — 水門キーワードタグエディタ
+   ───────────────────────────────────────────── */
+
+function KeywordFilterSection({
+  channelId,
+  initialKeywords,
+}: {
+  channelId: string;
+  initialKeywords: string[];
+}) {
+  const [inputValue, setInputValue] = useState("");
+  const [optimisticKeywords, setOptimisticKeywords] =
+    useOptimistic(initialKeywords);
+  const [, startTransition] = useTransition();
+
+  function saveKeywords(next: string[]) {
+    startTransition(async () => {
+      setOptimisticKeywords(next);
+      const fd = new FormData();
+      fd.set("channel_id", channelId);
+      fd.set("keyword_filters", JSON.stringify(next));
+      await updateKeywordFilters(fd);
+    });
+  }
+
+  function addKeyword(raw: string) {
+    const kw = raw.trim();
+    if (!kw) return;
+    if (optimisticKeywords.includes(kw)) {
+      setInputValue("");
+      return;
+    }
+    saveKeywords([...optimisticKeywords, kw]);
+    setInputValue("");
+  }
+
+  function removeKeyword(kw: string) {
+    saveKeywords(optimisticKeywords.filter((k) => k !== kw));
+  }
+
+  return (
+    <section className="mb-4">
+      <p className="mb-1.5 text-xs font-medium text-[var(--text-secondary)]">
+        水門（キーワードフィルタ）
+      </p>
+
+      {/* タグ一覧 */}
+      {optimisticKeywords.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-1.5">
+          {optimisticKeywords.map((kw) => (
+            <span
+              key={kw}
+              className="flex items-center gap-1 rounded-full bg-river-surface px-2.5 py-1 text-xs text-int-accent"
+            >
+              {kw}
+              <button
+                type="button"
+                onClick={() => removeKeyword(kw)}
+                className="text-[var(--text-secondary)] hover:text-int-danger"
+                aria-label={`${kw} を削除`}
+              >
+                <X size={12} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* 入力欄 */}
+      <input
+        type="text"
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === ",") {
+            e.preventDefault();
+            addKeyword(inputValue);
+          }
+        }}
+        placeholder="キーワードを追加…"
+        className="w-full rounded-lg border border-river-border bg-river-surface px-3 py-1.5 text-xs text-[var(--text-primary)] placeholder:text-[var(--text-secondary)]/50 focus:border-int-accent/50 focus:outline-none"
+      />
+      <p className="mt-1 text-[10px] text-[var(--text-secondary)]/60">
+        マッチする記事だけ表示されます
+      </p>
+    </section>
   );
 }

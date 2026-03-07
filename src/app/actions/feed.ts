@@ -40,6 +40,16 @@ function filterRecentItems(items: FeedItem[]): FeedItem[] {
   return recent.slice(0, ITEM_MAX_COUNT);
 }
 
+/** 水門: キーワードに一致する記事だけ通す（OR マッチ、大文字小文字区別なし） */
+function filterByKeywords(items: FeedItem[], keywords: string[]): FeedItem[] {
+  if (keywords.length === 0) return items;
+  const lower = keywords.map((k) => k.toLowerCase());
+  return items.filter((item) => {
+    const haystack = (item.title + " " + (item.content ?? "")).toLowerCase();
+    return lower.some((kw) => haystack.includes(kw));
+  });
+}
+
 export async function addFeedSource(
   prevState: FeedActionState,
   formData: FormData,
@@ -91,15 +101,24 @@ export async function addFeedSource(
     return { error: "ソースの登録に失敗しました" };
   }
 
+  // チャンネルのキーワードフィルタ（水門）を取得
+  const { data: ch } = await supabase
+    .from("channels")
+    .select("keyword_filters")
+    .eq("id", channelId)
+    .single();
+  const keywords = ch?.keyword_filters ?? [];
+
   // フィードアイテムをクライアントに返す（OGP 並列フェッチ付き）
   const recentItems = filterRecentItems(result.feed.items);
+  const gatedItems = filterByKeywords(recentItems, keywords);
   let items: FeedItemPayload[] = [];
-  if (recentItems.length > 0) {
+  if (gatedItems.length > 0) {
     const ogpMap = await fetchOgpBatch(
-      recentItems.map((item) => item.url),
+      gatedItems.map((item) => item.url),
     );
 
-    items = recentItems.map((item) => ({
+    items = gatedItems.map((item) => ({
       feedSourceId: source.id,
       title: item.title,
       url: item.url,
@@ -159,11 +178,19 @@ export async function refreshChannelById(
   } = await supabase.auth.getUser();
   if (!user) return empty;
 
-  // チャンネルの全ソースを取得（条件付きヘッダー含む）
-  const { data: sources } = await supabase
-    .from("feed_sources")
-    .select("id, url, etag, last_modified_header")
-    .eq("channel_id", channelId);
+  // チャンネルのキーワードフィルタ + 全ソースを並列取得
+  const [{ data: channelData }, { data: sources }] = await Promise.all([
+    supabase
+      .from("channels")
+      .select("keyword_filters")
+      .eq("id", channelId)
+      .single(),
+    supabase
+      .from("feed_sources")
+      .select("id, url, etag, last_modified_header")
+      .eq("channel_id", channelId),
+  ]);
+  const keywords = channelData?.keyword_filters ?? [];
 
   if (!sources || sources.length === 0) return empty;
 
@@ -195,12 +222,13 @@ export async function refreshChannelById(
       }
 
       const recentItems = filterRecentItems(result.feed.items);
-      if (recentItems.length > 0) {
+      const gatedItems = filterByKeywords(recentItems, keywords);
+      if (gatedItems.length > 0) {
         const ogpMap = await fetchOgpBatch(
-          recentItems.map((item) => item.url),
+          gatedItems.map((item) => item.url),
         );
 
-        const items = recentItems.map((item) => ({
+        const items = gatedItems.map((item) => ({
           feedSourceId: source.id,
           title: item.title,
           url: item.url,
@@ -226,4 +254,28 @@ export async function refreshChannelById(
   );
 
   return { items: allItems, errors, succeededSourceIds };
+}
+
+/** 水門: チャンネルのキーワードフィルタを更新 */
+export async function updateKeywordFilters(formData: FormData) {
+  const channelId = formData.get("channel_id") as string;
+  const keywordsRaw = formData.get("keyword_filters") as string;
+  if (!channelId) return;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const keywords: string[] = keywordsRaw
+    ? (JSON.parse(keywordsRaw) as string[]).filter(Boolean)
+    : [];
+
+  await supabase
+    .from("channels")
+    .update({ keyword_filters: keywords })
+    .eq("id", channelId);
+
+  revalidatePath(`/channels/${channelId}`);
 }

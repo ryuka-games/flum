@@ -14,7 +14,7 @@ export default async function ChannelPage({
 
   const { data: channel } = await supabase
     .from("channels")
-    .select("id, name, description")
+    .select("id, name, description, keyword_filters")
     .eq("id", id)
     .single();
 
@@ -53,6 +53,7 @@ export default async function ChannelPage({
         channelName={channel.name}
         sources={sources ?? []}
         existingUrls={existingUrls}
+        keywordFilters={channel.keyword_filters ?? []}
       />
 
       {hasSources ? (

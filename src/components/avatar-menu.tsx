@@ -16,7 +16,7 @@ export function AvatarMenu({
   user,
 }: {
   user: {
-    user_metadata: { avatar_url?: string; user_name?: string };
+    user_metadata: { avatar_url?: string; user_name?: string; full_name?: string };
     email?: string;
   };
 }) {
@@ -35,7 +35,10 @@ export function AvatarMenu({
   }, [open]);
 
   const avatarUrl = user.user_metadata.avatar_url;
-  const userName = user.user_metadata.user_name ?? user.email;
+  const userName =
+    user.user_metadata.user_name ??
+    user.user_metadata.full_name ??
+    user.email;
 
   return (
     <div
