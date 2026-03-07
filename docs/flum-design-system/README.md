@@ -7,10 +7,11 @@
 | ファイル | 内容 |
 |---------|------|
 | [tokens.md](tokens.md) | CSS カスタムプロパティ一覧（globals.css から抽出） |
-| [components.md](components.md) | Float System クラス、Decay、アニメーション、背景デコ |
+| [classes.md](classes.md) | Float System クラス、Decay、アニメーション、背景デコ |
 | [colors.md](colors.md) | カラーパレット + ドーナドーナとの対応 |
 | [architecture.md](architecture.md) | CSS Grid、z-index、containing block、レスポンシブ |
 | [references.md](references.md) | 事例研究、ソース一覧 |
+| [catalog/](catalog/README.md) | コンポーネントカタログ — 全UIコンポーネントの仕様書 |
 
 ## 設計原則
 

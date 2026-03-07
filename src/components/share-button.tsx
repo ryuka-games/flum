@@ -92,7 +92,7 @@ export function SharePopover({
           ) : (
             /* モバイル: ボトムシート */
             <div
-              className="fixed inset-0 z-50 bg-black/60"
+              className="fixed inset-0 z-40 bg-black/60"
               onClick={() => setOpen(false)}
             >
               <div
